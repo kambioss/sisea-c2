@@ -1,0 +1,2181 @@
+{
+ "url": "http://localhost:5174/",
+ "at": "2026-10-23T11:31:42.512Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 8,
+   "filled": [
+    0.96,
+    0.61,
+    0.67,
+    0.67,
+    0.51,
+    0.82,
+    0.46,
+    0.68
+   ],
+   "motion": {
+    "elements": 173,
+    "css": 139,
+    "transitions": 34,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 6759,
+     "screens": 7.5,
+     "words": 731,
+     "img": 18,
+     "video": 0,
+     "canvas": 0,
+     "svg": 4,
+     "sections": 9,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 13,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "lac-tchad.jpg",
+      "pluie-kounkane.jpg",
+      "terre.jpg",
+      "terre.jpg",
+      "station.jpg",
+      "niger.jpg",
+      "poussiere.jpg",
+      "lac-tchad.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Climat & Alertes",
+     "words": 3,
+     "chars": 16,
+     "lines": 1,
+     "size": 123.8,
+     "vw": 8.6,
+     "font": "Plus Jakarta Sans",
+     "weight": 800,
+     "tracking": -0.05,
+     "leading": 0.92,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.92,
+     "top": 158,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Climat & Alertes",
+     "words": 3,
+     "lines": 1,
+     "size": 123.8,
+     "font": "Plus Jakarta Sans"
+    },
+    "headings": [
+     {
+      "text": "Climat & Alertes",
+      "words": 3,
+      "chars": 16,
+      "lines": 1,
+      "size": 123.8,
+      "vw": 8.6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.05,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 158,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "55",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.03,
+      "top": 726,
+      "tag": "strong",
+      "kind": "statement"
+     },
+     {
+      "text": "862",
+      "words": 1,
+      "chars": 3,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.04,
+      "top": 726,
+      "tag": "strong",
+      "kind": "statement"
+     },
+     {
+      "text": "1901 → 2100",
+      "words": 3,
+      "chars": 11,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.14,
+      "top": 726,
+      "tag": "strong",
+      "kind": "statement"
+     },
+     {
+      "text": "Un continent, une lecture",
+      "words": 4,
+      "chars": 25,
+      "lines": 1,
+      "size": 57.6,
+      "vw": 4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.46,
+      "top": 1044,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Du lac Tchad aux pluies de Casamance , du fleuve Niger aux vents du Sahara , un seul outil pour lire le climat africain.",
+      "words": 24,
+      "chars": 120,
+      "lines": 3,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Plus Jakarta Sans",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.71,
+      "top": 1131,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Le climat observé",
+      "words": 3,
+      "chars": 17,
+      "lines": 1,
+      "size": 57.6,
+      "vw": 4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.43,
+      "top": 1689,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "De la mesure à la carte",
+      "words": 6,
+      "chars": 23,
+      "lines": 2,
+      "size": 57.6,
+      "vw": 4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.34,
+      "top": 2346,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "124 ans en une image",
+      "words": 5,
+      "chars": 20,
+      "lines": 1,
+      "size": 57.6,
+      "vw": 4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.44,
+      "top": 3152,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Tout ce que fait la plateforme",
+      "words": 6,
+      "chars": 30,
+      "lines": 1,
+      "size": 57.6,
+      "vw": 4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.53,
+      "top": 3919,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Un bien public africain",
+      "words": 4,
+      "chars": 23,
+      "lines": 2,
+      "size": 57.6,
+      "vw": 4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.31,
+      "top": 4754,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Commencez par un pays",
+      "words": 4,
+      "chars": 21,
+      "lines": 1,
+      "size": 57.6,
+      "vw": 4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 5562,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Voir",
+      "words": 1,
+      "chars": 4,
+      "lines": 1,
+      "size": 86.4,
+      "vw": 6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.11,
+      "top": 5646,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "sur la carte",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 86.4,
+      "vw": 6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.32,
+      "top": 5653,
+      "tag": "button",
+      "kind": "heading"
+     },
+     {
+      "text": "G E O S S I A",
+      "words": 7,
+      "chars": 13,
+      "lines": 1,
+      "size": 129.6,
+      "vw": 9,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 0.8,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 5978,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 15,
+     "maxLines": 3,
+     "over2Lines": 0,
+     "statements": 4,
+     "centered": 4,
+     "medianWords": 4,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Plus Jakarta Sans",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      20,
+      22,
+      36,
+      58,
+      86,
+      124,
+      130
+     ],
+     "sizeCount": 13,
+     "notLoaded": [],
+     "body": {
+      "font": "Plus Jakarta Sans",
+      "size": 17,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 13.2
+     },
+     "measureChars": 70,
+     "max": {
+      "size": 129.6,
+      "vw": 9,
+      "font": "Plus Jakarta Sans",
+      "text": "G"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.09,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#eef2f7",
+     "bodyBgHsl": {
+      "h": 213,
+      "s": 0.36,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#0d1b2e",
+       "top": 68,
+       "hsl": {
+        "h": 215,
+        "s": 0.56,
+        "l": 0.12
+       }
+      },
+      {
+       "color": "#2171b5",
+       "top": 469,
+       "hsl": {
+        "h": 208,
+        "s": 0.69,
+        "l": 0.42
+       }
+      },
+      {
+       "color": "#6baed6",
+       "top": 521,
+       "hsl": {
+        "h": 202,
+        "s": 0.57,
+        "l": 0.63
+       }
+      },
+      {
+       "color": "#fcbba1",
+       "top": 573,
+       "hsl": {
+        "h": 17,
+        "s": 0.94,
+        "l": 0.81
+       }
+      },
+      {
+       "color": "#fb6a4a",
+       "top": 625,
+       "hsl": {
+        "h": 11,
+        "s": 0.96,
+        "l": 0.64
+       }
+      },
+      {
+       "color": "#e1e7ef",
+       "top": 1410,
+       "hsl": {
+        "h": 214,
+        "s": 0.3,
+        "l": 0.91
+       }
+      },
+      {
+       "color": "#1e2b3c",
+       "top": 6473,
+       "hsl": {
+        "h": 214,
+        "s": 0.33,
+        "l": 0.18
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#14202f",
+       "share": 0.35
+      },
+      {
+       "color": "#4a5768",
+       "share": 0.33
+      },
+      {
+       "color": "#c9d3e1",
+       "share": 0.08
+      },
+      {
+       "color": "#c9d2de",
+       "share": 0.07
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.06
+      }
+     ],
+     "button": {
+      "bg": "#ffffff",
+      "hsl": {
+       "h": 0,
+       "s": 0,
+       "l": 1
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 6,
+     "inHero": 3,
+     "radius": 0,
+     "height": 56,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Accueil",
+      "Géoportail",
+      "Ouvrir le géoportail"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 13,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 5,
+     "fixed": true,
+     "height": 68,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "plus jakarta sans"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 6759,
+    "margins": {
+     "left": 60,
+     "right": 66
+    },
+    "sections": [
+     {
+      "sel": "main",
+      "tag": "main",
+      "top": 68,
+      "height": 6365,
+      "words": 591,
+      "media": 4,
+      "middle": 0,
+      "heading": {
+       "text": "Climat & Alertes",
+       "size": 124,
+       "tag": "h1"
+      },
+      "left": 0,
+      "right": 60,
+      "textLeft": 60,
+      "textRight": 60,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "footer.site-footer",
+      "tag": "footer",
+      "top": 6473,
+      "height": 286,
+      "words": 67,
+      "media": 0,
+      "middle": 223,
+      "heading": {
+       "text": "Explorer",
+       "size": 16,
+       "tag": "h4"
+      },
+      "left": 60,
+      "right": 60,
+      "textLeft": 60,
+      "textRight": 60,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Climat & Alertes",
+      "size": 124,
+      "top": 158,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 60,
+      "n": 4
+     },
+     {
+      "x": 832,
+      "n": 4
+     },
+     {
+      "x": 744,
+      "n": 2
+     },
+     {
+      "x": 760,
+      "n": 2
+     },
+     {
+      "x": 76,
+      "n": 1
+     },
+     {
+      "x": 150,
+      "n": 1
+     },
+     {
+      "x": 617,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 15,
+    "bodySize": 17,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.11,
+    "voidBox": {
+     "x": 1200,
+     "y": 120,
+     "w": 240,
+     "h": 600
+    }
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 9,
+   "filled": [
+    0.96,
+    0.66,
+    0.55,
+    0.54,
+    0.71,
+    0.42,
+    0.88,
+    0.54,
+    0.71
+   ],
+   "motion": {
+    "elements": 173,
+    "css": 139,
+    "transitions": 34,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 8712,
+     "screens": 8.5,
+     "words": 726,
+     "img": 18,
+     "video": 0,
+     "canvas": 0,
+     "svg": 4,
+     "sections": 9,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 13,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "lac-tchad.jpg",
+      "pluie-kounkane.jpg",
+      "terre.jpg",
+      "terre.jpg",
+      "station.jpg",
+      "niger.jpg",
+      "poussiere.jpg",
+      "lac-tchad.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Climat & Alertes",
+     "words": 3,
+     "chars": 16,
+     "lines": 1,
+     "size": 66,
+     "vw": 8.6,
+     "font": "Plus Jakarta Sans",
+     "weight": 800,
+     "tracking": -0.05,
+     "leading": 0.92,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.92,
+     "top": 170,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Climat & Alertes",
+     "words": 3,
+     "lines": 1,
+     "size": 66,
+     "font": "Plus Jakarta Sans"
+    },
+    "headings": [
+     {
+      "text": "Climat & Alertes",
+      "words": 3,
+      "chars": 16,
+      "lines": 1,
+      "size": 66,
+      "vw": 8.6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.05,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 170,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Un continent, une lecture",
+      "words": 4,
+      "chars": 25,
+      "lines": 1,
+      "size": 34,
+      "vw": 4.4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.51,
+      "top": 1188,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Le climat observé",
+      "words": 3,
+      "chars": 17,
+      "lines": 1,
+      "size": 34,
+      "vw": 4.4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.96,
+      "top": 2314,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "De la mesure à la carte",
+      "words": 6,
+      "chars": 23,
+      "lines": 2,
+      "size": 34,
+      "vw": 4.4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.37,
+      "top": 2794,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "124 ans en une image",
+      "words": 5,
+      "chars": 20,
+      "lines": 1,
+      "size": 34,
+      "vw": 4.4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 3625,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Tout ce que fait la plateforme",
+      "words": 6,
+      "chars": 30,
+      "lines": 1,
+      "size": 34,
+      "vw": 4.4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 5127,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Un bien public africain",
+      "words": 4,
+      "chars": 23,
+      "lines": 2,
+      "size": 34,
+      "vw": 4.4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.34,
+      "top": 6040,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Commencez par un pays",
+      "words": 4,
+      "chars": 21,
+      "lines": 1,
+      "size": 34,
+      "vw": 4.4,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 7329,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Voir",
+      "words": 1,
+      "chars": 4,
+      "lines": 1,
+      "size": 46.1,
+      "vw": 6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.11,
+      "top": 7392,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "sur la carte",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 46.1,
+      "vw": 6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.32,
+      "top": 7396,
+      "tag": "button",
+      "kind": "heading"
+     },
+     {
+      "text": "G E O S S I A",
+      "words": 7,
+      "chars": 13,
+      "lines": 1,
+      "size": 69.1,
+      "vw": 9,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 0.8,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 7696,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 11,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 3,
+     "medianWords": 4,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Plus Jakarta Sans",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      20,
+      22,
+      24,
+      34,
+      46,
+      66,
+      69
+     ],
+     "sizeCount": 13,
+     "notLoaded": [],
+     "body": {
+      "font": "Plus Jakarta Sans",
+      "size": 17,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 13.2
+     },
+     "measureChars": 70,
+     "max": {
+      "size": 69.1,
+      "vw": 9,
+      "font": "Plus Jakarta Sans",
+      "text": "G"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.09,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#eef2f7",
+     "bodyBgHsl": {
+      "h": 213,
+      "s": 0.36,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#0d1b2e",
+       "top": 68,
+       "hsl": {
+        "h": 215,
+        "s": 0.56,
+        "l": 0.12
+       }
+      },
+      {
+       "color": "#2171b5",
+       "top": 437,
+       "hsl": {
+        "h": 208,
+        "s": 0.69,
+        "l": 0.42
+       }
+      },
+      {
+       "color": "#6baed6",
+       "top": 489,
+       "hsl": {
+        "h": 202,
+        "s": 0.57,
+        "l": 0.63
+       }
+      },
+      {
+       "color": "#fcbba1",
+       "top": 541,
+       "hsl": {
+        "h": 17,
+        "s": 0.94,
+        "l": 0.81
+       }
+      },
+      {
+       "color": "#fb6a4a",
+       "top": 593,
+       "hsl": {
+        "h": 11,
+        "s": 0.96,
+        "l": 0.64
+       }
+      },
+      {
+       "color": "#cb181d",
+       "top": 645,
+       "hsl": {
+        "h": 358,
+        "s": 0.79,
+        "l": 0.45
+       }
+      },
+      {
+       "color": "#e1e7ef",
+       "top": 1504,
+       "hsl": {
+        "h": 214,
+        "s": 0.3,
+        "l": 0.91
+       }
+      },
+      {
+       "color": "#1e2b3c",
+       "top": 8273,
+       "hsl": {
+        "h": 214,
+        "s": 0.33,
+        "l": 0.18
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#14202f",
+       "share": 0.36
+      },
+      {
+       "color": "#4a5768",
+       "share": 0.33
+      },
+      {
+       "color": "#c9d3e1",
+       "share": 0.08
+      },
+      {
+       "color": "#c9d2de",
+       "share": 0.07
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.06
+      }
+     ],
+     "button": {
+      "bg": "#cb181d",
+      "hsl": {
+       "h": 358,
+       "s": 0.79,
+       "l": 0.45
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 5,
+     "inHero": 1,
+     "radius": 0,
+     "height": 56,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Ouvrir le géoportail"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 13,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 1,
+     "fixed": true,
+     "height": 68,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "plus jakarta sans"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 8712,
+    "margins": {
+     "left": 16,
+     "right": 31
+    },
+    "sections": [
+     {
+      "sel": "main",
+      "tag": "main",
+      "top": 68,
+      "height": 8165,
+      "words": 588,
+      "media": 4,
+      "middle": 0,
+      "heading": {
+       "text": "Climat & Alertes",
+       "size": 66,
+       "tag": "h1"
+      },
+      "left": 0,
+      "right": 26,
+      "textLeft": 16,
+      "textRight": 31,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "footer.site-footer",
+      "tag": "footer",
+      "top": 8273,
+      "height": 440,
+      "words": 67,
+      "media": 0,
+      "middle": 34,
+      "heading": {
+       "text": "Explorer",
+       "size": 16,
+       "tag": "h4"
+      },
+      "left": 31,
+      "right": 31,
+      "textLeft": 31,
+      "textRight": 31,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Climat & Alertes",
+      "size": 66,
+      "top": 170,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 31,
+      "n": 7
+     },
+     {
+      "x": 60,
+      "n": 4
+     },
+     {
+      "x": 16,
+      "n": 2
+     },
+     {
+      "x": 76,
+      "n": 2
+     }
+    ],
+    "leftBlocks": 15,
+    "bodySize": 17,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 11,
+   "filled": [
+    0.96,
+    0.6,
+    0.69,
+    0.38,
+    0.69,
+    0.56,
+    0.26,
+    0.9,
+    0.41,
+    0.8,
+    0.96
+   ],
+   "motion": {
+    "elements": 173,
+    "css": 139,
+    "transitions": 34,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 8732,
+     "screens": 10.3,
+     "words": 716,
+     "img": 18,
+     "video": 0,
+     "canvas": 0,
+     "svg": 4,
+     "sections": 9,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 13,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "lac-tchad.jpg",
+      "pluie-kounkane.jpg",
+      "terre.jpg",
+      "terre.jpg",
+      "station.jpg",
+      "niger.jpg",
+      "poussiere.jpg",
+      "lac-tchad.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Climat & Alertes",
+     "words": 3,
+     "chars": 16,
+     "lines": 2,
+     "size": 62.4,
+     "vw": 16,
+     "font": "Plus Jakarta Sans",
+     "weight": 800,
+     "tracking": -0.05,
+     "leading": 0.92,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.92,
+     "top": 152,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Climat & Alertes",
+     "words": 3,
+     "lines": 2,
+     "size": 62.4,
+     "font": "Plus Jakarta Sans"
+    },
+    "headings": [
+     {
+      "text": "Climat & Alertes",
+      "words": 3,
+      "chars": 16,
+      "lines": 2,
+      "size": 62.4,
+      "vw": 16,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.05,
+      "leading": 0.92,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 152,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Un continent, une lecture",
+      "words": 4,
+      "chars": 25,
+      "lines": 2,
+      "size": 34,
+      "vw": 8.7,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 979,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Du lac Tchad aux pluies de Casamance , du fleuve Niger aux vents du Sahara , un seul outil pour lire le climat africain.",
+      "words": 24,
+      "chars": 120,
+      "lines": 4,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Plus Jakarta Sans",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 1076,
+      "tag": "p",
+      "kind": "statement"
+     },
+     {
+      "text": "Le climat observé",
+      "words": 3,
+      "chars": 17,
+      "lines": 1,
+      "size": 34,
+      "vw": 8.7,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 1763,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "De la mesure à la carte",
+      "words": 6,
+      "chars": 23,
+      "lines": 2,
+      "size": 34,
+      "vw": 8.7,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.73,
+      "top": 2289,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Collecter Les températures de CRU TS depuis 1901, les pluies satellitaires CHIRPS depuis 1981, les projections CMIP6 jusqu'en 2100.",
+      "words": 19,
+      "chars": 131,
+      "lines": 4,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.02,
+      "leading": 1.55,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 2733,
+      "tag": "li",
+      "kind": "statement"
+     },
+     {
+      "text": "Condenser Des millions de points de grille ramenés à 55 pays et 862 régions, puis traduits en anomalies, indices et tendances.",
+      "words": 21,
+      "chars": 126,
+      "lines": 4,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.02,
+      "leading": 1.55,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 2883,
+      "tag": "li",
+      "kind": "statement"
+     },
+     {
+      "text": "Diffuser Une carte, des alertes mensuelles et des fichiers ouverts, lisibles par un décideur comme par un technicien.",
+      "words": 18,
+      "chars": 117,
+      "lines": 4,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.02,
+      "leading": 1.55,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 3032,
+      "tag": "li",
+      "kind": "statement"
+     },
+     {
+      "text": "124 ans en une image",
+      "words": 5,
+      "chars": 20,
+      "lines": 1,
+      "size": 34,
+      "vw": 8.7,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 3312,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Tout ce que fait la plateforme",
+      "words": 6,
+      "chars": 30,
+      "lines": 2,
+      "size": 34,
+      "vw": 8.7,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 4546,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Un bien public africain",
+      "words": 4,
+      "chars": 23,
+      "lines": 2,
+      "size": 34,
+      "vw": 8.7,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.67,
+      "top": 5932,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Porté par l'OSS",
+      "words": 3,
+      "chars": 15,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.83,
+      "top": 6419,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Ouverte et documentée",
+      "words": 3,
+      "chars": 21,
+      "lines": 1,
+      "size": 22,
+      "vw": 5.6,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.83,
+      "top": 6587,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Commencez par un pays",
+      "words": 4,
+      "chars": 21,
+      "lines": 2,
+      "size": 34,
+      "vw": 8.7,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.035,
+      "leading": 1.02,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 6979,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Voir",
+      "words": 1,
+      "chars": 4,
+      "lines": 1,
+      "size": 39,
+      "vw": 10,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.18,
+      "top": 7077,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "sur la carte",
+      "words": 3,
+      "chars": 12,
+      "lines": 1,
+      "size": 39,
+      "vw": 10,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "left",
+      "widthRatio": 0.54,
+      "top": 7124,
+      "tag": "button",
+      "kind": "heading"
+     },
+     {
+      "text": "G E O S S I A",
+      "words": 7,
+      "chars": 13,
+      "lines": 1,
+      "size": 39,
+      "vw": 10,
+      "font": "Plus Jakarta Sans",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 0.8,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 7414,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 17,
+     "maxLines": 4,
+     "over2Lines": 0,
+     "statements": 4,
+     "centered": 2,
+     "medianWords": 5,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Plus Jakarta Sans",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      22,
+      24,
+      34,
+      39,
+      62
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "Plus Jakarta Sans",
+      "size": 17,
+      "leading": 1.55,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 13.2
+     },
+     "measureChars": 42,
+     "max": {
+      "size": 62.4,
+      "vw": 16,
+      "font": "Plus Jakarta Sans",
+      "text": "Climat & Alertes"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.05,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#eef2f7",
+     "bodyBgHsl": {
+      "h": 213,
+      "s": 0.36,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#0d1b2e",
+       "top": 68,
+       "hsl": {
+        "h": 215,
+        "s": 0.56,
+        "l": 0.12
+       }
+      },
+      {
+       "color": "#2171b5",
+       "top": 494,
+       "hsl": {
+        "h": 208,
+        "s": 0.69,
+        "l": 0.42
+       }
+      },
+      {
+       "color": "#6baed6",
+       "top": 540,
+       "hsl": {
+        "h": 202,
+        "s": 0.57,
+        "l": 0.63
+       }
+      },
+      {
+       "color": "#fcbba1",
+       "top": 586,
+       "hsl": {
+        "h": 17,
+        "s": 0.94,
+        "l": 0.81
+       }
+      },
+      {
+       "color": "#e1e7ef",
+       "top": 1331,
+       "hsl": {
+        "h": 214,
+        "s": 0.3,
+        "l": 0.91
+       }
+      },
+      {
+       "color": "#1e2b3c",
+       "top": 7929,
+       "hsl": {
+        "h": 214,
+        "s": 0.33,
+        "l": 0.18
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#14202f",
+       "share": 0.36
+      },
+      {
+       "color": "#4a5768",
+       "share": 0.34
+      },
+      {
+       "color": "#c9d3e1",
+       "share": 0.09
+      },
+      {
+       "color": "#c9d2de",
+       "share": 0.07
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.05
+      }
+     ],
+     "button": {
+      "bg": "#cb181d",
+      "hsl": {
+       "h": 358,
+       "s": 0.79,
+       "l": 0.45
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 5,
+     "inHero": 1,
+     "radius": 0,
+     "height": 56,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Ouvrir le géoportail"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 13,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 1,
+     "fixed": true,
+     "height": 68,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "plus jakarta sans"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 8732,
+    "margins": {
+     "left": 16,
+     "right": 16
+    },
+    "sections": [
+     {
+      "sel": "main",
+      "tag": "main",
+      "top": 68,
+      "height": 7821,
+      "words": 576,
+      "media": 4,
+      "middle": 0,
+      "heading": {
+       "text": "Climat & Alertes",
+       "size": 62,
+       "tag": "h1"
+      },
+      "left": 0,
+      "right": 16,
+      "textLeft": 16,
+      "textRight": 16,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "footer.site-footer",
+      "tag": "footer",
+      "top": 7929,
+      "height": 803,
+      "words": 67,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Explorer",
+       "size": 16,
+       "tag": "h4"
+      },
+      "left": 16,
+      "right": 61,
+      "textLeft": 16,
+      "textRight": 61,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Climat & Alertes",
+      "size": 62,
+      "top": 152,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 16,
+      "n": 9
+     },
+     {
+      "x": 34,
+      "n": 5
+     }
+    ],
+    "leftBlocks": 14,
+    "bodySize": 17,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "WARN",
+   "id": "size-count",
+   "width": 1440,
+   "message": "13 different font sizes (13, 14, 15, 16, 17, 18, 20, 22, 36, 58, 86, 124, 130).",
+   "fix": "A page needs about five: display, heading, lead, body, small.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "/run/media/kambia/Seagate Hub3/SISEA/code/geossia-platform/apps/frontend-c2/.taste-skill/inspect/desktop-fold.jpg",
+   "pages": [
+    "/run/media/kambia/Seagate Hub3/SISEA/code/geossia-platform/apps/frontend-c2/.taste-skill/inspect/desktop-page-01.jpg",
+    "/run/media/kambia/Seagate Hub3/SISEA/code/geossia-platform/apps/frontend-c2/.taste-skill/inspect/desktop-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "/run/media/kambia/Seagate Hub3/SISEA/code/geossia-platform/apps/frontend-c2/.taste-skill/inspect/tablet-fold.jpg",
+   "pages": [
+    "/run/media/kambia/Seagate Hub3/SISEA/code/geossia-platform/apps/frontend-c2/.taste-skill/inspect/tablet-page-01.jpg",
+    "/run/media/kambia/Seagate Hub3/SISEA/code/geossia-platform/apps/frontend-c2/.taste-skill/inspect/tablet-page-02.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "/run/media/kambia/Seagate Hub3/SISEA/code/geossia-platform/apps/frontend-c2/.taste-skill/inspect/mobile-fold.jpg",
+   "pages": [
+    "/run/media/kambia/Seagate Hub3/SISEA/code/geossia-platform/apps/frontend-c2/.taste-skill/inspect/mobile-page-01.jpg",
+    "/run/media/kambia/Seagate Hub3/SISEA/code/geossia-platform/apps/frontend-c2/.taste-skill/inspect/mobile-page-02.jpg"
+   ],
+   "film": []
+  }
+ ]
+}
