@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Icon } from "../components/Icon";
-import { useBundle, useTitle } from "../components/Layout";
+import { Icon } from "./Icon";
+import { useBundle, useTitle } from "./context";
 import { INDICATORS, Indicator, colorFor, formatValue, legendFor } from "../data/indicators";
 import { countryName } from "../data/countries";
 import { BasemapId, FeatureStyle, MapCanvas } from "./MapCanvas";

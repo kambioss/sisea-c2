@@ -2,7 +2,7 @@
 // slider, removable chips, and the inline help tooltip.
 
 import { useState } from "react";
-import { Icon } from "../components/Icon";
+import { Icon } from "./Icon";
 import { fmt } from "../data/indicators";
 
 export function Segmented<T extends string>({ value, options, onChange, size = "md" }: { value: T; options: Array<{ id: T; label: string }>; onChange(id: T): void; size?: "sm" | "md" }) {

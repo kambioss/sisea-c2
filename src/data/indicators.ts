@@ -12,6 +12,7 @@ export interface ZoneData {
   series: {
     tmean_anom: { start: number; values: Array<number | null> };
     spi12_year: { start: number; values: Array<number | null> };
+    spi_recent: Record<"spi1" | "spi3" | "spi12", { end: string | null; values: Array<number | null> }>;
     spi3_recent: { end: string | null; values: Array<number | null> };
     proj: Partial<Record<"ssp126" | "ssp245" | "ssp585", { start: number; values: Array<number | null> }>>;
   };
@@ -25,7 +26,7 @@ export interface Bundle {
 export type AlertLevel = 0 | 1 | 2 | 3;
 
 export const ALERT_LEVELS: Array<{ level: AlertLevel; label: string; short: string; color: string; range: string }> = [
-  { level: 0, label: "Normal", short: "Normal", color: "#cfd8e3", range: "SPI-3 > −0,5" },
+  { level: 0, label: "Normal", short: "Normal", color: "#b9beb4", range: "SPI-3 > −0,5" },
   { level: 1, label: "Vigilance", short: "Vigilance", color: "#f4c95d", range: "−1,0 < SPI-3 ≤ −0,5" },
   { level: 2, label: "Alerte", short: "Alerte", color: "#ee8a3c", range: "−1,5 < SPI-3 ≤ −1,0" },
   { level: 3, label: "Alerte maximale", short: "Maximale", color: "#d64545", range: "SPI-3 ≤ −1,5" },
@@ -53,11 +54,16 @@ export interface Indicator {
   decimals: number;
 }
 
-// Lavender → indigo, the géoportail's signature ramp (warming magnitude).
-const PURPLE = ["#ecebfb", "#cfccf4", "#aba6ea", "#8780db", "#6660c8", "#4a43a8", "#312b7d"];
-// SPI: dry (brown/orange) ↔ wet (indigo), WMO classes.
-const SPI_COLORS = ["#8c3b1f", "#d0703a", "#f2b880", "#eef0f4", "#a9b4ee", "#6c78d8", "#3c3f9e"];
+// Sable → rouille, la rampe signature du géoportail C2 (intensité du
+// réchauffement) : la palette « signal sécheresse » du site, pas un violet
+// générique. Lisible sur fond de carte sombre comme clair.
+const WARM = ["#f3e5c3", "#e8c98a", "#d9a95b", "#c48338", "#a65d24", "#7f3c17", "#55230e"];
+// SPI : sec (brun/orangé) ↔ humide (jade), classes OMM.
+const SPI_COLORS = ["#8c3b1f", "#d0703a", "#f2b880", "#e9e7df", "#a6d9c4", "#55a98a", "#1f7257"];
 const SPI_BREAKS = [-2, -1.5, -1, 1, 1.5, 2];
+
+// « Pas de donnée » : gris moyen, lisible sur fond de carte sombre et clair.
+export const NO_DATA = "#6b7076";
 
 export const INDICATORS: Indicator[] = [
   {
@@ -70,7 +76,7 @@ export const INDICATORS: Indicator[] = [
     frequency: "Annuelle (dernière année complète)",
     description: "Écart de la température moyenne annuelle de l'air à 2 m par rapport à la moyenne 1961-1990, pondérée par la surface sur les terres du pays.",
     howToRead: "Plus la teinte est foncée, plus l'année a été chaude par rapport au climat de référence.",
-    scale: { kind: "sequential", breaks: [0.25, 0.5, 0.75, 1, 1.25, 1.5], colors: PURPLE },
+    scale: { kind: "sequential", breaks: [0.25, 0.5, 0.75, 1, 1.25, 1.5], colors: WARM },
     value: (z) => z.climate.tmean_anom,
     domain: [-0.5, 2.5],
     decimals: 2,
@@ -85,7 +91,7 @@ export const INDICATORS: Indicator[] = [
     frequency: "Annuelle",
     description: "Écart de la moyenne annuelle des températures maximales journalières par rapport à 1961-1990. Indicateur proxy du stress thermique diurne.",
     howToRead: "Les teintes foncées signalent des journées nettement plus chaudes que la normale.",
-    scale: { kind: "sequential", breaks: [0.25, 0.5, 0.75, 1, 1.25, 1.5], colors: PURPLE },
+    scale: { kind: "sequential", breaks: [0.25, 0.5, 0.75, 1, 1.25, 1.5], colors: WARM },
     value: (z) => z.climate.tmax_anom,
     domain: [-0.5, 2.5],
     decimals: 2,
@@ -100,7 +106,7 @@ export const INDICATORS: Indicator[] = [
     frequency: "Annuelle",
     description: "Écart de la moyenne annuelle des températures minimales (nuits) par rapport à 1961-1990.",
     howToRead: "Des nuits plus chaudes réduisent la récupération physiologique des populations et des cultures.",
-    scale: { kind: "sequential", breaks: [0.25, 0.5, 0.75, 1, 1.25, 1.5], colors: PURPLE },
+    scale: { kind: "sequential", breaks: [0.25, 0.5, 0.75, 1, 1.25, 1.5], colors: WARM },
     value: (z) => z.climate.tmin_anom,
     domain: [-0.5, 2.5],
     decimals: 2,
@@ -114,7 +120,7 @@ export const INDICATORS: Indicator[] = [
     source: "CHIRPS v2 — Climate Hazards Center, UCSB",
     frequency: "Mensuelle",
     description: "Cumul de pluie des 12 derniers mois exprimé en écarts-types par rapport à la distribution 1991-2020 (méthode OMM, loi gamma).",
-    howToRead: "Valeurs négatives (brun) : déficit pluviométrique durable. Valeurs positives (indigo) : excédent.",
+    howToRead: "Valeurs négatives (brun) : déficit pluviométrique durable. Valeurs positives (jade) : excédent.",
     scale: { kind: "diverging", breaks: SPI_BREAKS, colors: SPI_COLORS },
     value: (z) => z.alerts.spi12,
     domain: [-3, 3],
@@ -175,7 +181,7 @@ export const INDICATORS: Indicator[] = [
     frequency: "Mise à jour annuelle",
     description: "Pente de la régression linéaire des températures moyennes annuelles depuis 1981, exprimée en degrés par décennie.",
     howToRead: "À 0,3 °C/décennie, un pays gagne environ 1,3 °C en 45 ans.",
-    scale: { kind: "sequential", breaks: [0.12, 0.16, 0.2, 0.24, 0.28, 0.32], colors: PURPLE },
+    scale: { kind: "sequential", breaks: [0.12, 0.16, 0.2, 0.24, 0.28, 0.32], colors: WARM },
     value: (z) => z.trends.warming_decade,
     domain: [0, 0.5],
     decimals: 3,
@@ -205,7 +211,7 @@ export const INDICATORS: Indicator[] = [
     frequency: "Scénario",
     description: "Changement de température moyenne annuelle projeté pour 2041-2060 par rapport à 1995-2014, scénario intermédiaire SSP2-4.5.",
     howToRead: "Le changement s'ajoute au réchauffement déjà observé depuis 1961-1990.",
-    scale: { kind: "sequential", breaks: [1.1, 1.3, 1.5, 1.7, 1.9, 2.1], colors: PURPLE },
+    scale: { kind: "sequential", breaks: [1.1, 1.3, 1.5, 1.7, 1.9, 2.1], colors: WARM },
     value: (z) => z.trends.proj2050_ssp245,
     domain: [0.5, 3],
     decimals: 2,
@@ -220,7 +226,7 @@ export const INDICATORS: Indicator[] = [
     frequency: "Scénario",
     description: "Changement de température projeté pour 2041-2060 par rapport à 1995-2014 dans le scénario à fortes émissions SSP5-8.5.",
     howToRead: "Borne haute plausible pour la planification de l'adaptation.",
-    scale: { kind: "sequential", breaks: [1.5, 1.7, 1.9, 2.1, 2.3, 2.5], colors: PURPLE },
+    scale: { kind: "sequential", breaks: [1.5, 1.7, 1.9, 2.1, 2.3, 2.5], colors: WARM },
     value: (z) => z.trends.proj2050_ssp585,
     domain: [0.5, 3.5],
     decimals: 2,
@@ -238,9 +244,9 @@ export function indicatorById(id: string | null | undefined): Indicator {
 }
 
 export function colorFor(indicator: Indicator, value: number | null): string {
-  if (value === null || Number.isNaN(value)) return "#e6e9ef";
+  if (value === null || Number.isNaN(value)) return NO_DATA;
   const scale = indicator.scale;
-  if (scale.kind === "alert") return ALERT_LEVELS[value as AlertLevel]?.color ?? "#e6e9ef";
+  if (scale.kind === "alert") return ALERT_LEVELS[value as AlertLevel]?.color ?? NO_DATA;
   const index = scale.breaks.findIndex((limit) => value < limit);
   return scale.colors[index === -1 ? scale.colors.length - 1 : index];
 }

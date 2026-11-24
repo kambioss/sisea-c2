@@ -1,0 +1,191 @@
+/* ── Downloads page ───────────────────────────────────────────────── */
+
+.dl-empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--ink-2, #8899a6);
+}
+.dl-empty-icon { font-size: 48px; margin-bottom: 16px; }
+.dl-empty h3 { color: var(--ink, #1a2b3c); margin: 0 0 8px; font-size: 20px; }
+.dl-empty p { max-width: 420px; margin: 0 auto; line-height: 1.6; }
+
+.dl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dl-card {
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #e3ddd0);
+  border-radius: 12px;
+  padding: 20px 24px;
+  transition: border-color 0.2s;
+}
+.dl-card:hover { border-color: var(--forest-2, #2d5a3d); }
+
+.dl-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dl-type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--forest-bg, #e6f4ee);
+  color: var(--forest-2, #2a7d5f);
+}
+
+.dl-date {
+  font-size: 13px;
+  color: var(--ink-2, #8899a6);
+}
+
+.dl-label {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink, #1a2b3c);
+}
+
+.dl-params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 12px;
+  color: var(--ink-2, #8899a6);
+  margin-bottom: 12px;
+}
+.dl-params b { color: var(--ink, #4a5568); }
+
+/* ── Progress bar ──────────────────────────────────────────────── */
+
+.dl-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+.dl-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--line, #e3ddd0);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+.dl-progress-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  background: var(--forest-2, #2a7d5f);
+  border-radius: 3px;
+  animation: dl-pulse 1.5s ease-in-out infinite;
+}
+.dl-progress span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--forest-2, #2a7d5f);
+  min-width: 36px;
+  text-align: right;
+}
+
+@keyframes dl-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ── Error ─────────────────────────────────────────────────────── */
+
+.dl-error {
+  font-size: 13px;
+  color: var(--clay, #c75b39);
+  background: #fef5f0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+/* ── Actions row ───────────────────────────────────────────────── */
+
+.dl-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.dl-status {
+  font-size: 13px;
+  font-weight: 500;
+}
+.dl-status-preparing { color: var(--forest-2, #2a7d5f); }
+.dl-status-pipeline { color: #e67e22; font-weight: 600; }
+.dl-status-ready { color: var(--forest-1, #1a6b4f); font-weight: 700; }
+.dl-status-failed { color: var(--clay, #c75b39); }
+.dl-status-downloading { color: var(--ink-2, #8899a6); }
+
+.dl-btn {
+  margin-left: auto;
+  padding: 6px 16px;
+  border: 1px solid var(--line, #e3ddd0);
+  border-radius: 6px;
+  background: var(--surface, #fff);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--ink, #1a2b3c);
+  transition: background 0.15s;
+}
+.dl-btn:hover { background: var(--surface-2, #f7f4ec); }
+
+.dl-btn-download {
+  background: var(--forest-2, #2a7d5f);
+  color: #fff;
+  border-color: var(--forest-2, #2a7d5f);
+}
+.dl-btn-download:hover { background: var(--forest-1, #1a6b4f); }
+
+.dl-btn-remove {
+  margin-left: 0;
+  border: none;
+  color: var(--ink-2, #8899a6);
+  font-size: 12px;
+}
+.dl-btn-remove:hover { color: var(--clay, #c75b39); }
+
+/* ── Pipeline log ─────────────────────────────────────────────── */
+
+.dl-pipeline-log {
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-2, #8899a6);
+  background: var(--surface-2, #f7f4ec);
+  border: 1px solid var(--line, #e3ddd0);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.dl-pipeline-log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Status card borders ───────────────────────────────────────── */
+
+.dl-preparing { border-left: 3px solid var(--forest-2, #2a7d5f); }
+.dl-pipeline { border-left: 3px solid #e67e22; }
+.dl-ready { border-left: 3px solid var(--forest-1, #1a6b4f); }
+.dl-failed { border-left: 3px solid var(--danger, #c53030); }
+.dl-downloading { border-left: 3px solid var(--ink-2, #8899a6); }
+
+.dl-preparing { border-left: 3px solid var(--forest-2, #2d5a3d); }
+.dl-failed { border-left: 3px solid var(--clay, #c75b39); }

@@ -1,11 +1,21 @@
 import { Link } from "react-router-dom";
-import { PageHero, useTitle } from "../components/Layout";
 
 export default function NotFoundPage() {
-  useTitle("Page introuvable");
   return (
-    <PageHero eyebrow="Erreur 404" title="Page introuvable" lead="Cette adresse ne correspond à aucune page du site Climat & Alertes.">
-      <Link to="/" className="btn btn-dark">Retour à l'accueil</Link>
-    </PageHero>
+    <div className="container notfound">
+      <div className="eyebrow" style={{ justifyContent: "center", marginBottom: 16 }}>
+        404
+      </div>
+      <h1>Page introuvable</h1>
+      <p>
+        Cette page n'existe pas ou a été déplacée.
+        <br />
+        Peut-être cherchiez-vous le catalogue ou le géoportail ?
+      </p>
+      <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 8 }}>
+        <Link to="/" className="btn btn-clay">Retour à l'accueil</Link>
+        <Link to="/geoportail" className="btn btn-ghost">Géoportail ↗</Link>
+      </div>
+    </div>
   );
 }

@@ -4,8 +4,8 @@
 // colours every country by its annual anomaly from 1901 to 2100.
 
 import { useEffect, useState } from "react";
-import { Icon } from "../components/Icon";
-import { LineChart, LineSeries } from "../components/charts";
+import { Icon } from "./Icon";
+import { LineChart, LineSeries } from "./charts";
 import { RampLegend, SeasonalGrid, StripeRows } from "../components/trendCharts";
 import { SSPS, Ssp, TREND_VARIABLES, TrendData, TrendVariable, isTemperature, loadTrend, rampFor } from "../data/climateTrends";
 import { Segmented } from "./controls";
@@ -37,7 +37,7 @@ export function TrendsDrawer({ code, title, variable, ssp, onVariable, onSsp, on
 
   const evolution: LineSeries[] = data && temp
     ? [
-        { name: "Observé (CRU)", color: "#1b2533", start: data.years[0], values: data.observed },
+        { name: "Observé (CRU)", color: "var(--ink)", start: data.years[0], values: data.observed },
         ...(data.models[0] ? [{ name: "Modèles, historique", color: "#8a9a96", start: data.years[0], values: data.models[0].annual.map((v, i) => (data.years[i] <= 2014 ? v : null)) }] : []),
         ...data.models.map((m) => ({ name: m.label, color: m.color, start: data.years[0], values: m.annual.map((v, i) => (data.years[i] >= 2014 ? v : null)) })),
       ]

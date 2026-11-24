@@ -1,27 +1,47 @@
-import { Route, Routes } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { SiteLayout } from "./components/Layout";
 import HomePage from "./pages/HomePage";
-import HomePageV2 from "./pages/HomePageV2";
 import ResourcesPage from "./pages/ResourcesPage";
-import AboutPage from "./pages/AboutPage";
+import DashboardPage from "./pages/DashboardPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import LoginPage from "./pages/LoginPage";
+import BulletinPage from "./pages/BulletinPage";
 import GeoportalPage from "./geoportal/GeoportalPage";
-import ScientificGeoportalPage from "./geoportal/ScientificGeoportalPage";
+import AlertsPage from "./pages/AlertsPage";
+import DownloadsPage from "./pages/DownloadsPage";
+import GeoAiAssistant from "./components/GeoAiAssistant";
+import { AuthProvider } from "./context/AuthContext";
 
 export default function App() {
+  const location = useLocation();
   return (
+    <AuthProvider>
     <Routes>
-      {/* The géoportail is a full-screen application shell, without the site header/footer. */}
+      {/* The geoportal is a full-screen application shell, without site header/footer. */}
       <Route path="/geoportail" element={<GeoportalPage />} />
-      <Route path="/geoportail-scientifique" element={<ScientificGeoportalPage />} />
-      <Route element={<SiteLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="accueil-v1" element={<HomePage />} />
-        <Route path="accueil-v2" element={<HomePageV2 />} />
-        <Route path="ressources" element={<ResourcesPage />} />
-        <Route path="a-propos" element={<AboutPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
+      <Route
+        path="*"
+        element={
+          <SiteLayout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/ressources" element={<ResourcesPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/bulletin" element={<BulletinPage />} />
+              {/* Redirect old routes to new structure */}
+              <Route path="/indicateurs" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/alertes" element={<AlertsPage />} />
+              <Route path="/telecharger" element={<DownloadsPage />} />
+              <Route path="/tendances" element={<Navigate to="/" replace />} />
+              <Route path="/methodologie" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </SiteLayout>
+        }
+      />
     </Routes>
+    {location.pathname.startsWith("/geoportail") && <GeoAiAssistant />}
+    </AuthProvider>
   );
 }

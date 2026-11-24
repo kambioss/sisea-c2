@@ -1,186 +1,266 @@
-// Lightweight SVG charts: warming stripes, sparkline, line chart with an
-// optional linear trend, and SPI bars. No chart library: the site only needs
-// these four marks and they must stay crisp at any size.
+/**
+ * Mini SVG chart library — pas de dépendance externe.
+ * Les couleurs viennent du design system (CSS vars → valeurs en dur ici).
+ */
 
-import { useId, useState } from "react";
-import { fmt } from "../data/indicators";
+const C = {
+  clay: "#c75b39",
+  ochre: "#d4a24c",
+  rust: "#9c2f1c",
+  sage: "#6b8a5a",
+  jade: "#3a6b5e",
+  sand: "#c9a86a",
+  ink: "#1f2a22",
+  ink2: "#3d4a3e",
+  muted: "#6f6650",
+  line: "#d8cdb5",
+};
 
-type Values = Array<number | null>;
-
-// Hawkins palette (blue → red), anomalies clipped to ±range.
-const STRIPE_COLORS = ["#08306b", "#08519c", "#2171b5", "#4292c6", "#6baed6", "#9ecae1", "#c6dbef", "#deebf7", "#fee0d2", "#fcbba1", "#fc9272", "#fb6a4a", "#ef3b2c", "#cb181d", "#a50f15", "#67000d"];
-
-function stripeColor(value: number, range: number): string {
-  const t = Math.max(0, Math.min(0.9999, (value + range) / (2 * range)));
-  return STRIPE_COLORS[Math.floor(t * STRIPE_COLORS.length)];
-}
-
-export function Stripes({ values, start, height = 80, range = 1.6, label }: { values: Values; start: number; height?: number; range?: number; label?: string }) {
-  const [hover, setHover] = useState<number | null>(null);
-  const width = values.length;
+/* ---------- Sparkline ---------- */
+export function Sparkline({
+  data,
+  color = C.clay,
+  width = 110,
+  height = 28,
+  area = true,
+}: {
+  data: number[];
+  color?: string;
+  width?: number;
+  height?: number;
+  area?: boolean;
+}) {
+  if (!data.length) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const pad = 2;
+  const step = (width - pad * 2) / (data.length - 1 || 1);
+  const pts = data.map((v, i) => {
+    const x = pad + i * step;
+    const y = pad + (height - pad * 2) * (1 - (v - min) / range);
+    return [x, y] as const;
+  });
+  const path = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  const areaPath = `${path} L ${pts[pts.length - 1][0]} ${height} L ${pts[0][0]} ${height} Z`;
+  const id = `sg-${Math.random().toString(36).slice(2, 9)}`;
   return (
-    <div className="stripes">
-      <svg viewBox={`0 0 ${width} 1`} preserveAspectRatio="none" style={{ height }} role="img" aria-label={label ?? `Bandes de réchauffement ${start}-${start + width - 1}`} onMouseLeave={() => setHover(null)}>
-        {values.map((value, i) => (
-          <rect key={i} x={i} y={0} width={1.02} height={1} fill={value === null ? "#e6e9ef" : stripeColor(value, range)} onMouseEnter={() => setHover(i)} />
-        ))}
-      </svg>
-      <div className="stripes-axis">
-        <span>{start}</span>
-        <span className="stripes-readout">{hover !== null ? `${start + hover} · ${fmt(values[hover], 2, true)} °C` : "Survolez une année"}</span>
-        <span>{start + width - 1}</span>
-      </div>
-    </div>
-  );
-}
-
-export function Sparkline({ values, width = 120, height = 32, zero = true, color = "var(--accent)" }: { values: Values; width?: number; height?: number; zero?: boolean; color?: string }) {
-  const nums = values.filter((v): v is number => v !== null);
-  if (nums.length < 2) return <svg width={width} height={height} />;
-  const min = Math.min(...nums, zero ? 0 : Infinity);
-  const max = Math.max(...nums, zero ? 0 : -Infinity);
-  const span = max - min || 1;
-  const x = (i: number) => (i / (values.length - 1)) * width;
-  const y = (v: number) => height - 2 - ((v - min) / span) * (height - 4);
-  const path = values.map((v, i) => (v === null ? null : `${x(i).toFixed(1)},${y(v).toFixed(1)}`)).filter(Boolean).join(" L");
-  const last = [...values].reverse().find((v) => v !== null) as number;
-  return (
-    <svg width={width} height={height} className="sparkline" aria-hidden="true">
-      {zero && <line x1={0} x2={width} y1={y(0)} y2={y(0)} className="spark-zero" />}
-      <path d={`M${path}`} fill="none" stroke={color} strokeWidth={1.6} strokeLinejoin="round" />
-      <circle cx={x(values.lastIndexOf(last))} cy={y(last)} r={2.6} fill={color} />
+    <svg className="spark" width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {area && <path className="area" d={areaPath} fill={`url(#${id})`} />}
+      <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }
 
-export interface LineSeries {
-  name: string;
-  color: string;
-  start: number;
-  values: Values;
-  dashed?: boolean;
-}
+/* ---------- Line chart (multi-series, used on trends page) ---------- */
+export function LineChart({
+  series,
+  width = 600,
+  height = 240,
+  yMin,
+  yMax,
+  xLabels,
+}: {
+  series: { name: string; color: string; dashed?: boolean; data: number[] }[];
+  width?: number;
+  height?: number;
+  yMin?: number;
+  yMax?: number;
+  xLabels?: string[];
+}) {
+  const all = series.flatMap((s) => s.data);
+  const min = yMin ?? Math.min(...all);
+  const max = yMax ?? Math.max(...all);
+  const range = max - min || 1;
+  const padL = 40;
+  const padR = 12;
+  const padT = 12;
+  const padB = 24;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+  const n = series[0]?.data.length ?? 0;
+  const step = innerW / (n - 1 || 1);
 
-function linearFit(series: LineSeries, from: number) {
-  const pts = series.values.map((v, i) => [series.start + i, v] as const).filter((p): p is readonly [number, number] => p[1] !== null && p[0] >= from);
-  const n = pts.length;
-  if (n < 5) return null;
-  const mx = pts.reduce((s, p) => s + p[0], 0) / n;
-  const my = pts.reduce((s, p) => s + p[1], 0) / n;
-  const b = pts.reduce((s, p) => s + (p[0] - mx) * (p[1] - my), 0) / pts.reduce((s, p) => s + (p[0] - mx) ** 2, 0);
-  return { x0: pts[0][0], x1: pts[n - 1][0], f: (x: number) => my + b * (x - mx), slope: b };
-}
-
-export function LineChart({ series, height = 260, width = 720, unit = "°C", trendFrom, yLabel }: { series: LineSeries[]; height?: number; width?: number; unit?: string; trendFrom?: number; yLabel?: string }) {
-  const clip = useId();
-  const [hoverYear, setHoverYear] = useState<number | null>(null);
-  const pad = { l: 44, r: 16, t: 14, b: 28 };
-  const years = series.flatMap((s) => [s.start, s.start + s.values.length - 1]);
-  const x0 = Math.min(...years);
-  const x1 = Math.max(...years);
-  const nums = series.flatMap((s) => s.values.filter((v): v is number => v !== null));
-  const lo = Math.floor(Math.min(0, ...nums) * 2) / 2;
-  const hi = Math.ceil(Math.max(0, ...nums) * 2) / 2;
-  const x = (year: number) => pad.l + ((year - x0) / (x1 - x0 || 1)) * (width - pad.l - pad.r);
-  const y = (v: number) => pad.t + (1 - (v - lo) / (hi - lo || 1)) * (height - pad.t - pad.b);
-  const step = hi - lo > 4 ? 1 : 0.5;
-  const ticks: number[] = [];
-  for (let v = lo; v <= hi + 1e-9; v += step) ticks.push(Math.round(v * 10) / 10);
-  const decade = Math.ceil(x0 / 20) * 20;
-  const xticks: number[] = [];
-  for (let yr = decade; yr <= x1; yr += 20) xticks.push(yr);
-  const trend = trendFrom !== undefined && series[0] ? linearFit(series[0], trendFrom) : null;
-
-  const onMove = (event: React.MouseEvent<SVGSVGElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const px = ((event.clientX - rect.left) / rect.width) * width;
-    const year = Math.round(x0 + ((px - pad.l) / (width - pad.l - pad.r)) * (x1 - x0));
-    setHoverYear(year >= x0 && year <= x1 ? year : null);
-  };
+  const ticks = 4;
+  const yTicks = Array.from({ length: ticks + 1 }, (_, i) => min + (range * i) / ticks);
 
   return (
-    <div className="linechart">
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={series.map((s) => s.name).join(", ")} onMouseMove={onMove} onMouseLeave={() => setHoverYear(null)}>
-        <defs>
-          <clipPath id={clip}>
-            <rect x={pad.l} y={pad.t} width={width - pad.l - pad.r} height={height - pad.t - pad.b} />
-          </clipPath>
-        </defs>
-        {ticks.map((t) => (
-          <g key={t}>
-            <line x1={pad.l} x2={width - pad.r} y1={y(t)} y2={y(t)} className={t === 0 ? "grid zero" : "grid"} />
-            <text x={pad.l - 8} y={y(t) + 4} className="tick" textAnchor="end">{fmt(t, step < 1 ? 1 : 0, true)}</text>
+    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
+      {/* Grid */}
+      {yTicks.map((t, i) => {
+        const y = padT + innerH * (1 - (t - min) / range);
+        return (
+          <g key={i}>
+            <line x1={padL} y1={y} x2={width - padR} y2={y} stroke={C.line} strokeWidth="0.5" />
+            <text x={padL - 6} y={y + 3} textAnchor="end" fontSize="9" fontFamily="JetBrains Mono" fill={C.muted}>
+              {t.toFixed(1)}
+            </text>
           </g>
-        ))}
-        {xticks.map((t) => (
-          <text key={t} x={x(t)} y={height - 8} className="tick" textAnchor="middle">{t}</text>
-        ))}
-        {yLabel && <text x={pad.l} y={10} className="tick">{yLabel}</text>}
-        <g clipPath={`url(#${clip})`}>
-          {series.map((s) => {
-            const d = s.values.map((v, i) => (v === null ? null : `${x(s.start + i).toFixed(1)},${y(v).toFixed(1)}`)).filter(Boolean).join(" L");
-            return <path key={s.name} d={`M${d}`} fill="none" stroke={s.color} strokeWidth={2} strokeDasharray={s.dashed ? "5 4" : undefined} strokeLinejoin="round" />;
-          })}
-          {trend && <line x1={x(trend.x0)} x2={x(trend.x1)} y1={y(trend.f(trend.x0))} y2={y(trend.f(trend.x1))} stroke="var(--ink)" strokeWidth={1.5} strokeDasharray="2 3" />}
-        </g>
-        {hoverYear !== null && (
-          <g>
-            <line x1={x(hoverYear)} x2={x(hoverYear)} y1={pad.t} y2={height - pad.b} className="crosshair" />
-            {series.map((s) => {
-              const v = s.values[hoverYear - s.start];
-              return v === null || v === undefined ? null : <circle key={s.name} cx={x(hoverYear)} cy={y(v)} r={3.5} fill={s.color} stroke="var(--surface)" strokeWidth={1.5} />;
-            })}
+        );
+      })}
+      {/* Zero line */}
+      {min < 0 && max > 0 && (
+        <line
+          x1={padL}
+          y1={padT + innerH * (1 - (0 - min) / range)}
+          x2={width - padR}
+          y2={padT + innerH * (1 - (0 - min) / range)}
+          stroke={C.muted}
+          strokeWidth="0.8"
+          strokeDasharray="2 3"
+        />
+      )}
+      {/* Series */}
+      {series.map((s, si) => {
+        const pts = s.data.map((v, i) => {
+          const x = padL + i * step;
+          const y = padT + innerH * (1 - (v - min) / range);
+          return [x, y] as const;
+        });
+        const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+        return (
+          <g key={si}>
+            <path
+              d={d}
+              fill="none"
+              stroke={s.color}
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              strokeDasharray={s.dashed ? "5 4" : undefined}
+            />
+            {/* Points on each value */}
+            {pts.map((p, i) => (
+              <circle
+                key={i}
+                cx={p[0]}
+                cy={p[1]}
+                r={i === pts.length - 1 ? 5 : 3.5}
+                fill={s.color}
+                stroke="#fff"
+                strokeWidth="1.5"
+              />
+            ))}
           </g>
-        )}
-      </svg>
-      <div className="chart-foot">
-        <div className="chart-legend">
-          {series.map((s) => (
-            <span key={s.name}><i style={{ background: s.color }} />{s.name}</span>
-          ))}
-          {trend && <span><i className="dash" />Tendance {trendFrom}+ : {fmt(trend.slope * 10, 2, true)} {unit}/décennie</span>}
-        </div>
-        <div className="chart-readout">
-          {hoverYear !== null
-            ? `${hoverYear} · ${series.map((s) => `${s.name} ${fmt(s.values[hoverYear - s.start] ?? null, 2, true)}`).join(" · ")}`
-            : " "}
-        </div>
-      </div>
-    </div>
+        );
+      })}
+      {/* X axis labels */}
+      {(xLabels ?? []).map((lbl, i) => {
+        const x = padL + (i * innerW) / ((xLabels?.length ?? 1) - 1 || 1);
+        return (
+          <text key={i} x={x} y={height - 6} textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fill={C.muted}>
+            {lbl}
+          </text>
+        );
+      })}
+    </svg>
   );
 }
 
-export function SpiBars({ values, endMonth, height = 120 }: { values: Values; endMonth: string | null; height?: number }) {
-  const [hover, setHover] = useState<number | null>(null);
-  const width = 720;
-  const max = 3;
-  const bw = width / values.length;
-  const mid = height / 2;
-  const monthOf = (i: number) => {
-    if (!endMonth) return "";
-    const [yy, mm] = endMonth.split("-").map(Number);
-    const d = new Date(yy, mm - 1 - (values.length - 1 - i), 1);
-    return d.toLocaleDateString("fr-FR", { month: "short", year: "numeric" });
-  };
+/* ---------- Bar chart (SPI bars, used on alerts / trends pages) ---------- */
+export function BarChart({
+  data,
+  width = 600,
+  height = 180,
+  baseline = 0,
+  colorNeg = C.rust,
+  colorPos = C.sage,
+  xLabels,
+}: {
+  data: number[];
+  width?: number;
+  height?: number;
+  baseline?: number;
+  colorNeg?: string;
+  colorPos?: string;
+  xLabels?: string[];
+}) {
+  const min = Math.min(...data, baseline);
+  const max = Math.max(...data, baseline);
+  const range = max - min || 1;
+  const padL = 30;
+  const padR = 12;
+  const padT = 12;
+  const padB = 24;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+  const bw = innerW / data.length;
+  const zeroY = padT + innerH * (1 - (baseline - min) / range);
+
   return (
-    <div className="spibars">
-      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="SPI-3 des 36 derniers mois" onMouseLeave={() => setHover(null)}>
-        {[-2, -1, 1, 2].map((t) => (
-          <line key={t} x1={0} x2={width} y1={mid - (t / max) * mid} y2={mid - (t / max) * mid} className="grid" />
-        ))}
-        <line x1={0} x2={width} y1={mid} y2={mid} className="grid zero" />
-        {values.map((v, i) => {
-          if (v === null) return <rect key={i} x={i * bw + 2} y={mid - 1} width={bw - 4} height={2} fill="var(--line)" onMouseEnter={() => setHover(i)} />;
-          const h = (Math.min(Math.abs(v), max) / max) * mid;
-          const color = v <= -1.5 ? "#d64545" : v <= -1 ? "#ee8a3c" : v <= -0.5 ? "#f4c95d" : v >= 1 ? "#5b5bd6" : "#aab3c5";
-          return <rect key={i} x={i * bw + 2} y={v >= 0 ? mid - h : mid} width={bw - 4} height={Math.max(h, 1)} rx={2} fill={color} opacity={hover === null || hover === i ? 1 : 0.45} onMouseEnter={() => setHover(i)} />;
-        })}
-      </svg>
-      <div className="stripes-axis">
-        <span>{monthOf(0)}</span>
-        <span className="stripes-readout">{hover !== null ? `${monthOf(hover)} · SPI-3 ${fmt(values[hover], 2, true)}` : "Survolez un mois"}</span>
-        <span>{monthOf(values.length - 1)}</span>
-      </div>
-    </div>
+    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
+      <line x1={padL} y1={zeroY} x2={width - padR} y2={zeroY} stroke={C.muted} strokeWidth="0.8" />
+      {data.map((v, i) => {
+        const x = padL + i * bw + bw * 0.15;
+        const w = bw * 0.7;
+        const y = padT + innerH * (1 - (v - min) / range);
+        const barH = Math.abs(zeroY - y);
+        const yPos = v >= baseline ? y : zeroY;
+        return (
+          <rect
+            key={i}
+            x={x}
+            y={yPos}
+            width={w}
+            height={barH}
+            fill={v >= baseline ? colorPos : colorNeg}
+            opacity={0.85}
+          />
+        );
+      })}
+      {(xLabels ?? []).map((lbl, i) => {
+        const x = padL + i * bw + bw / 2;
+        return (
+          <text key={i} x={x} y={height - 6} textAnchor="middle" fontSize="9" fontFamily="JetBrains Mono" fill={C.muted}>
+            {lbl}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ---------- Climate stripes (Ed Hawkins style) ---------- */
+export function ClimateStripes({
+  data,
+  width = 600,
+  height = 56,
+}: {
+  data: number[]; // anomalies, °C
+  width?: number;
+  height?: number;
+}) {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = Math.max(Math.abs(min), Math.abs(max)) || 1;
+  // Diverging palette: cold → blue/teal, hot → rust/red
+  const colorFor = (v: number) => {
+    const t = v / range; // -1..1
+    if (t >= 0) {
+      // 0 → sand, 1 → rust
+      const lerp = (a: number[], b: number[], t: number) =>
+        a.map((ai, i) => Math.round(ai + (b[i] - ai) * t));
+      const rgb = lerp([201, 168, 106], [156, 47, 28], t);
+      return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+    } else {
+      const lerp = (a: number[], b: number[], t: number) =>
+        a.map((ai, i) => Math.round(ai + (b[i] - ai) * t));
+      const rgb = lerp([201, 168, 106], [58, 107, 94], -t);
+      return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+    }
+  };
+  const bw = width / data.length;
+  return (
+    <svg className="stripes-svg" width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+      {data.map((v, i) => (
+        <rect key={i} x={i * bw} y={0} width={bw + 0.5} height={height} fill={colorFor(v)} />
+      ))}
+    </svg>
   );
 }

@@ -11,10 +11,19 @@
     "data": "python3 ../../scripts/build_c2_indicators.py"
   },
   "dependencies": {
+    "cesium": "^1.145.0",
+    "echarts": "^6.1.0",
+    "echarts-for-react": "^3.1.0",
+    "keycloak-js": "^26.2.4",
     "maplibre-gl": "^4.7.1",
+    "ol": "^10.11.0",
+    "proj4": "^2.22.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^6.28.0",
+    "remark-gfm": "^4.0.1",
+    "vite-plugin-cesium": "^1.2.23"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",

@@ -1,0 +1,15 @@
+# Lightweight C2 UI rollout: compile without copying the 1 GB document
+# library, then retain that immutable library from the deployed base image.
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY apps/frontend-c2/package.json apps/frontend-c2/package-lock.json ./
+RUN npm ci
+COPY apps/frontend/adminPlugin.mjs /frontend/adminPlugin.mjs
+COPY apps/frontend-c2/index.html apps/frontend-c2/tsconfig.json apps/frontend-c2/vite.config.ts ./
+COPY apps/frontend-c2/src/ ./src/
+COPY apps/frontend-c2/public/silent-check-sso.html ./public/silent-check-sso.html
+RUN npm run build
+
+FROM ghcr.io/sahara-and-sahel-observatory/geossia-geoportail:2026-11-24-geoai-streaming
+COPY --from=build /app/dist/index.html /usr/share/nginx/html/index.html
+COPY --from=build /app/dist/assets/ /usr/share/nginx/html/assets/
