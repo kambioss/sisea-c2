@@ -21,6 +21,38 @@ function inlineChartHeight(chart: InlineChart): number {
   return Math.min(430, Math.max(230, 86 + rows * 25));
 }
 
+function DownloadableChart({ chart }: { chart: InlineChart }) {
+  const chartRef = useRef<ReactECharts | null>(null);
+
+  function downloadChart() {
+    const instance = chartRef.current?.getEchartsInstance();
+    if (!instance) return;
+    const href = instance.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: "#ffffff" });
+    const filename = (chart.title || "graphique-geoai")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase();
+    const link = document.createElement("a");
+    link.href = href;
+    link.download = `${filename || "graphique-geoai"}.png`;
+    link.click();
+  }
+
+  return (
+    <div className="c2-geoai-chart">
+      <div className="c2-geoai-chart-heading">
+        {chart.title && <div className="c2-geoai-chart-title">{chart.title}</div>}
+        <button type="button" className="c2-geoai-chart-download" onClick={downloadChart} title="Télécharger le graphique en PNG" aria-label="Télécharger le graphique en PNG">↓ PNG</button>
+      </div>
+      <ReactECharts
+        ref={chartRef}
+        option={chart.option}
+        style={{ height: inlineChartHeight(chart), width: "100%" }}
+        opts={{ renderer: "canvas" }}
+      />
+    </div>
+  );
+}
+
 function precipitationFallback(question: string) {
   const normalized = question.toLocaleLowerCase("fr");
   const asksForRain = /pluie|pr[ée]cipitation/.test(normalized);
@@ -191,16 +223,7 @@ export default function GeoAiAssistant() {
                   : message.text}
                 {message.charts && message.charts.length > 0 && (
                   <div className="c2-geoai-charts">
-                    {message.charts.map((chart, chartIndex) => (
-                      <div key={chartIndex} className="c2-geoai-chart">
-                        {chart.title && <div className="c2-geoai-chart-title">{chart.title}</div>}
-                        <ReactECharts
-                          option={chart.option}
-                          style={{ height: inlineChartHeight(chart), width: "100%" }}
-                          opts={{ renderer: "svg" }}
-                        />
-                      </div>
-                    ))}
+                    {message.charts.map((chart, chartIndex) => <DownloadableChart key={chartIndex} chart={chart} />)}
                   </div>
                 )}
               </div>

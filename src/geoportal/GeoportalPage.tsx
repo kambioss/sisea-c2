@@ -184,6 +184,7 @@ function normalizePlaceName(value: string): string {
 interface FocusZone { id: string; bbox: [number, number, number, number] | null }
 interface GeoAiChart { id?: string; kind?: string; title?: string; unit?: string; points?: [string, number][] }
 interface GeoAiAnalysis { mode?: string; charts: GeoAiChart[] }
+interface GeoAiResultLayer { layerName: string; title: string; territory?: string }
 
 async function resolveFocus(prompt: string): Promise<FocusZone | null> {
   const normalized = normalizePlaceName(prompt);
@@ -558,6 +559,7 @@ export default function GeoportalPage() {
   const [shareDone, setShareDone] = useState(false);
   const [tutorialStep, setTutorialStep] = useState<number | null>(null);
   const [geoAiAnalysis, setGeoAiAnalysis] = useState<GeoAiAnalysis | null>(null);
+  const [geoAiResultLayer, setGeoAiResultLayer] = useState<GeoAiResultLayer | null>(null);
 
   useEffect(() => {
     if (!timelapse) return;
@@ -759,10 +761,24 @@ export default function GeoportalPage() {
         if (!item || typeof item !== "object") continue;
         const typed = item as { type?: string; overlay_id?: string };
         if (typed.type === "query_result") {
-          const actionResult = (item as { result?: Record<string, unknown> }).result;
-          const outer = actionResult?.result && typeof actionResult.result === "object" ? actionResult.result as Record<string, unknown> : actionResult;
-          const charts = Array.isArray(outer?.charts) ? outer.charts as GeoAiChart[] : [];
-          if (charts.length) setGeoAiAnalysis({ mode: String(outer?.analysis_mode ?? ""), charts });
+          const queryAction = item as { result?: Record<string, unknown>; map_layer?: string; territory_id?: string };
+          const jobResult = queryAction.result;
+          const manifest = jobResult?.result && typeof jobResult.result === "object" ? jobResult.result as Record<string, unknown> : jobResult;
+          const analysis = manifest?.result && typeof manifest.result === "object" ? manifest.result as Record<string, unknown> : manifest;
+          const charts = Array.isArray(analysis?.charts) ? analysis.charts as GeoAiChart[] : [];
+          if (charts.length) setGeoAiAnalysis({ mode: String(analysis?.analysis_mode ?? ""), charts });
+          const mapLayers = (analysis?.map_layers && typeof analysis.map_layers === "object"
+            ? analysis.map_layers
+            : manifest?.map_layers && typeof manifest.map_layers === "object" ? manifest.map_layers : {}) as Record<string, unknown>;
+          const qualified = queryAction.map_layer ?? Object.values(mapLayers).find((value): value is string => typeof value === "string");
+          if (qualified) {
+            setGeoAiResultLayer({
+              layerName: qualified,
+              title: String(manifest?.question ?? jobResult?.question ?? envelope.question ?? "Résultat de l’analyse GeoAI"),
+              territory: queryAction.territory_id,
+            });
+            setTool("legend");
+          }
         }
         if (typed.type === "toggle_overlay" && typed.overlay_id) {
           setOverlays((prev) => prev.includes(typed.overlay_id!) ? prev : [...prev, typed.overlay_id!]);
@@ -1426,7 +1442,7 @@ export default function GeoportalPage() {
             <CesiumMap basemap={basemap} rasterLayer={visibleRasterLayer} />
           </Suspense>
         ) : (
-          <MapCanvas ref={mapRef} level={regionLevel ? "regions" : "countries"} styles={styles} choroplethVisible={!rasterIndicator && !activeProductDate && (indicatorVisible || Boolean(timelapse))} rasterLayer={visibleRasterLayer} rasterClipIds={vegetationHealthAfricaWide || spiAfricaWide || populationAfricaWide ? units.map((unit) => unit.id) : selected ? [selected] : region !== "all" || applied.excluded.length > 0 ? units.filter((unit) => isActive(unit.id)).map((unit) => unit.id) : undefined} geeTileLayers={geeTileLayers} selected={selected} basemap={basemap} overlays={overlays} drawBbox={drawBboxActive} onDrawBbox={(bbox) => { setDrawnBbox(bbox); setDrawingZone(false); }} onSelect={selectCountry} onHover={setHover} />
+          <MapCanvas ref={mapRef} level={regionLevel ? "regions" : "countries"} styles={styles} choroplethVisible={!rasterIndicator && !activeProductDate && (indicatorVisible || Boolean(timelapse))} rasterLayer={visibleRasterLayer} analysisLayer={geoAiResultLayer?.layerName} rasterClipIds={vegetationHealthAfricaWide || spiAfricaWide || populationAfricaWide ? units.map((unit) => unit.id) : selected ? [selected] : region !== "all" || applied.excluded.length > 0 ? units.filter((unit) => isActive(unit.id)).map((unit) => unit.id) : undefined} geeTileLayers={geeTileLayers} selected={selected} basemap={basemap} overlays={overlays} drawBbox={drawBboxActive} onDrawBbox={(bbox) => { setDrawnBbox(bbox); setDrawingZone(false); }} onSelect={selectCountry} onHover={setHover} />
         )}
         {!bundle && <div className="map-status">{error ? `Indicateurs indisponibles : ${error}` : "Chargement…"}</div>}
 
@@ -1577,6 +1593,18 @@ export default function GeoportalPage() {
 
         {geoAiAnalysis && !trendsOpen && <GeoAiAnalysisCard analysis={geoAiAnalysis} onClose={() => setGeoAiAnalysis(null)} />}
 
+        {!compareMode && tool === "legend" && geoAiResultLayer && !trendsOpen && !timelapse && (
+          <div className="map-card legend-card">
+            <div className="legend-header">
+              <strong className="legend-title">{geoAiResultLayer.title}</strong>
+              <button type="button" className="legend-result-close" onClick={() => setGeoAiResultLayer(null)} aria-label="Retirer le résultat GeoAI">×</button>
+            </div>
+            {geoAiResultLayer.territory && <div className="legend-period">Territoire analysé : {geoAiResultLayer.territory}</div>}
+            <img className="raster-legend" src={analysisLegendUrl(geoAiResultLayer.layerName)} alt={`Légende ${geoAiResultLayer.title}`} />
+            <div className="legend-footer">Couche calculée par GeoAI · intersection territoriale</div>
+          </div>
+        )}
+
         {trendsOpen && (
           <TrendsDrawer code={selected ?? "AFR"} title={selected ? `${zoneName(selected)}${selected.includes(".") ? ` · ${countryName(selected.split(".")[0])}` : ""}` : "Afrique"} variable={trendVar} ssp={trendSsp} onVariable={setTrendVar} onSsp={setTrendSsp} onClose={() => setTrendsOpen(false)} />
         )}
@@ -1598,7 +1626,7 @@ export default function GeoportalPage() {
           />
         )}
 
-        {!compareMode && tool === "legend" && activeProductDate && !trendsOpen && !timelapse && (
+        {!compareMode && tool === "legend" && !geoAiResultLayer && activeProductDate && !trendsOpen && !timelapse && (
           <div className="map-card legend-card">
             <div className="legend-header">
               <strong className="legend-title">{activeProductIndicator?.label_fr}</strong>
@@ -1609,7 +1637,7 @@ export default function GeoportalPage() {
             <div className="legend-footer">{activeProductIndicator?.dates_count} date(s) disponible(s)</div>
           </div>
         )}
-        {!compareMode && tool === "legend" && rasterIndicator && !activeProductDate && !trendsOpen && !timelapse && (
+        {!compareMode && tool === "legend" && !geoAiResultLayer && rasterIndicator && !activeProductDate && !trendsOpen && !timelapse && (
           <div className="map-card legend-card">
             <div className="legend-header">
               <strong className="legend-title">{rasterIndicator.name}</strong>
@@ -1620,7 +1648,7 @@ export default function GeoportalPage() {
             <div className="legend-footer">Source : {rasterIndicator.source}</div>
           </div>
         )}
-        {!compareMode && tool === "legend" && !rasterIndicator && !activeProductDate && indicatorVisible && !trendsOpen && !timelapse && (
+        {!compareMode && tool === "legend" && !geoAiResultLayer && !rasterIndicator && !activeProductDate && indicatorVisible && !trendsOpen && !timelapse && (
           <div className="map-card legend-card">
             <div className="legend-header">
               <strong className="legend-title">{indicator.short}</strong>
@@ -1812,6 +1840,10 @@ function productForecastLabel(indicator: ProductIndicator, date: ProductDate): s
 }
 
 const LEGEND_WMS = ((import.meta.env.VITE_GEOSERVER_WMS_URL as string | undefined) ?? "/geoserver/geossia/wms").replace(/\/$/, "");
+function analysisLegendUrl(layerName: string): string {
+  const params = new URLSearchParams({ SERVICE: "WMS", VERSION: "1.1.1", REQUEST: "GetLegendGraphic", FORMAT: "image/png", LAYER: layerName.includes(":") ? layerName : `geossia:${layerName}`, TRANSPARENT: "true" });
+  return `${LEGEND_WMS}?${params.toString()}`;
+}
 function rasterLegendUrl(layer: RasterClimateLayer, period: { layerName: string } | null): string | null {
   if (!period) return null;
   const params = new URLSearchParams({ SERVICE: "WMS", VERSION: "1.1.1", REQUEST: "GetLegendGraphic", FORMAT: "image/png", LAYER: period.layerName.includes(":") ? period.layerName : `geossia:${period.layerName}`, TRANSPARENT: "true" });

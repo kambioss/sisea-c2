@@ -160,6 +160,7 @@ interface Props {
   basemap: BasemapId;
   overlays: string[];
   rasterLayer?: { layerName: string; style?: string; sldBody?: string } | null;
+  analysisLayer?: string | null;
   rasterClipIds?: string[];
   geeTileLayers?: GeeTileEntry[];
   drawBbox?: boolean;
@@ -170,7 +171,7 @@ interface Props {
 
 const AFRICA_BOUNDS: [number, number, number, number] = [-20, -36, 54, 38];
 
-export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({ level, styles, choroplethVisible, selected, basemap, overlays, rasterLayer, rasterClipIds, geeTileLayers, drawBbox, onDrawBbox, onSelect, onHover }, ref) {
+export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({ level, styles, choroplethVisible, selected, basemap, overlays, rasterLayer, analysisLayer, rasterClipIds, geeTileLayers, drawBbox, onDrawBbox, onSelect, onHover }, ref) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<OlMap | null>(null);
   const vectorSource = useRef(new VectorSource<Feature<Geometry>>());
@@ -180,6 +181,7 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
   const choroplethRef = useRef<VectorLayer<VectorSource<Feature<Geometry>>> | null>(null);
   const selectionRef = useRef<VectorLayer<VectorSource<Feature<Geometry>>> | null>(null);
   const rasterLayersRef = useRef<ImageLayer<ImageWMS>[]>([]);
+  const analysisLayerRef = useRef<ImageLayer<ImageWMS> | null>(null);
   const maskRef = useRef<VectorLayer<VectorSource<Feature<Geometry>>> | null>(null);
   const overlayLayersRef = useRef<Map<string, ImageLayer<ImageWMS> | VectorLayer<VectorSource<Feature<Geometry>>>>>(new Map());
   const hoveredRef = useRef<Feature<Geometry> | null>(null);
@@ -439,6 +441,35 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rasterLayer?.layerName, rasterLayer?.style, rasterLayer?.sldBody, rasterClipIds?.join(","), loadedLevel, ready]);
+
+  // GeoAI advanced-query result, kept above the source raster.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map) return;
+    if (analysisLayerRef.current) {
+      map.removeLayer(analysisLayerRef.current);
+      analysisLayerRef.current = null;
+    }
+    if (!analysisLayer) return;
+    const qualified = analysisLayer.includes(":") ? analysisLayer : `geossia:${analysisLayer}`;
+    const layer = new ImageLayer({
+      className: "geoai-analysis-layer",
+      source: new ImageWMS({
+        url: wmsBase,
+        params: { LAYERS: qualified, FORMAT: "image/png", TRANSPARENT: "true", VERSION: "1.1.1", _v: Date.now().toString() },
+        serverType: "geoserver",
+        ratio: 1,
+      }),
+      opacity: 0.9,
+      zIndex: 80,
+    });
+    map.addLayer(layer);
+    analysisLayerRef.current = layer;
+    return () => {
+      map.removeLayer(layer);
+      if (analysisLayerRef.current === layer) analysisLayerRef.current = null;
+    };
+  }, [analysisLayer, ready, wmsBase]);
 
   // Basemap switching
   useEffect(() => {

@@ -436,6 +436,13 @@ p { margin: 0; }
 /* Section titles (01 · Inondations, 02 · Sécheresse) */
 .alert-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; margin-left: 10px; border-radius: 12px; background: #e65100; color: #fff; font-family: var(--mono); font-size: 12px; font-weight: 700; vertical-align: middle; }
 
+/* ── Page Alertes : titres élargis ── */
+.alerts-accordion-list .report-accordion-info h4 { font-size: 26px; }
+.alerts-accordion-list .alert-badge { min-width: 26px; height: 26px; font-size: 13px; }
+.alerts-accordion-list .flood-state strong { font-size: 18px; }
+.alerts-accordion-list .cap-countries h3,
+.alerts-accordion-list .cap-flash h3 { font-size: 15px; }
+
 /* ── SAP sécheresse ── */
 
 /* Horizon tabs (court / moyen / long terme) */
@@ -2621,6 +2628,7 @@ p { margin: 0; }
   .indicator-grid, .resources-grid { grid-template-columns: 1fr; }
   .report-accordion-header { padding: 18px 16px; gap: 14px; }
   .report-accordion-body { padding: 0 16px 16px; }
+  .alerts-accordion-list .report-accordion-info h4 { font-size: 22px; }
   .report-accordion-item { flex-wrap: wrap; padding: 14px 16px; }
   .report-accordion-download { width: 100%; justify-content: center; margin-top: 4px; }
   .alert-kpis { grid-template-columns: 1fr; }
@@ -3743,6 +3751,10 @@ p { margin: 0; }
 .c2-geoai-charts { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
 .c2-geoai-chart { width: 100%; box-sizing: border-box; overflow: hidden; padding: 8px 5px 3px; border: 1px solid #e3e9ee; border-radius: 8px; background: #f8fafb; }
 .c2-geoai-chart-title { margin: 0 4px 4px; color: #315778; font-size: 11px; font-weight: 700; line-height: 1.35; text-align: center; }
+.c2-geoai-chart-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 0 4px; }
+.c2-geoai-chart-heading .c2-geoai-chart-title { flex: 1; }
+.c2-geoai-chart-download { flex: 0 0 auto; border: 1px solid #cbd8e3; border-radius: 4px; background: #fff; color: #244b75; padding: 3px 6px; font-size: 10px; font-weight: 700; cursor: pointer; }
+.c2-geoai-chart-download:hover { background: #eaf2f8; border-color: #8fa9bf; }
 
 .bulletin-subscription-form { display: grid; gap: 14px; }
 .bulletin-field { width: 100%; height: 48px; padding: 0 18px; border: 1px solid var(--line-2); border-radius: var(--r-pill); font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); outline: none; }
