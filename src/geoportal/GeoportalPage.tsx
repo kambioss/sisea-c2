@@ -571,6 +571,8 @@ export default function GeoportalPage() {
   const [tutorialStep, setTutorialStep] = useState<number | null>(null);
   const [geoAiAnalysis, setGeoAiAnalysis] = useState<GeoAiAnalysis | null>(null);
   const [geoAiResultLayer, setGeoAiResultLayer] = useState<GeoAiResultLayer | null>(null);
+  const [hiddenLayerIds, setHiddenLayerIds] = useState<Set<string>>(() => new Set());
+  const [expandedLayerIds, setExpandedLayerIds] = useState<Set<string>>(() => new Set());
 
   // Lien profond depuis la page Alertes : ?focus=lon,lat (avec &bbox=ouest,sud,est,nord
   // pour une zone) épingle le lieu et cadre la vue au montage du géoportail ;
@@ -1210,6 +1212,36 @@ export default function GeoportalPage() {
       : rasterIndicator?.id === "raster-vci" || rasterIndicator?.id === "raster-vhi" ? vegetationHealthSldFor(rasterPeriod.layerName) : undefined,
   } : null;
   const mapChoroplethVisible = !rasterIndicator && !activeProductDate && (indicatorVisible || Boolean(timelapse));
+  const primaryLayerId = geoAiResultLayer
+    ? "geoai"
+    : activeProductDate
+      ? "product"
+      : rasterIndicator
+        ? "raster"
+        : mapChoroplethVisible
+          ? "choropleth"
+          : null;
+  const layerManagerItems = [
+    ...(primaryLayerId ? [{ id: primaryLayerId, label: geoAiResultLayer?.title ?? activeProductIndicator?.label_fr ?? rasterIndicator?.name ?? indicator.short }] : []),
+    ...overlays.map((id) => ({ id: `overlay:${id}`, label: OVERLAYS.find((item) => item.id === id)?.label ?? id })),
+    ...geeTileLayers.map((layer) => ({ id: `gee:${layer.id}`, label: layer.label })),
+  ];
+  const isLayerShown = (id: string) => !hiddenLayerIds.has(id);
+  const toggleManagedLayer = (id: string) => setHiddenLayerIds((current) => {
+    const next = new Set(current);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  });
+  const toggleManagedLegend = (id: string) => setExpandedLayerIds((current) => {
+    const next = new Set(current);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  });
+  const visibleOverlays = overlays.filter((id) => isLayerShown(`overlay:${id}`));
+  const visibleGeeTileLayers = geeTileLayers.filter((layer) => isLayerShown(`gee:${layer.id}`));
+  const primaryLayerShown = primaryLayerId ? isLayerShown(primaryLayerId) : true;
   // Stable geographic reference, including when a source raster is shown.
   const showLocalities = true;
 
@@ -1476,10 +1508,10 @@ export default function GeoportalPage() {
       <section className="gp-map">
         {mode3d ? (
           <Suspense fallback={<div className="map-status">Chargement du globe 3D…</div>}>
-            <CesiumMap basemap={basemap} rasterLayer={visibleRasterLayer} showLocalities={showLocalities} />
+            <CesiumMap basemap={basemap} rasterLayer={primaryLayerShown ? visibleRasterLayer : null} showLocalities={showLocalities} />
           </Suspense>
         ) : (
-          <MapCanvas ref={mapRef} level={regionLevel ? "regions" : "countries"} styles={styles} choroplethVisible={mapChoroplethVisible} rasterLayer={visibleRasterLayer} analysisLayer={geoAiResultLayer?.layerName} rasterClipIds={vegetationHealthAfricaWide || spiAfricaWide || populationAfricaWide ? units.map((unit) => unit.id) : selected ? [selected] : region !== "all" || applied.excluded.length > 0 ? units.filter((unit) => isActive(unit.id)).map((unit) => unit.id) : undefined} geeTileLayers={geeTileLayers} selected={selected} basemap={basemap} overlays={overlays} drawBbox={drawBboxActive} alertContext={alertContext} showLocalities={showLocalities} onDrawBbox={(bbox) => { setDrawnBbox(bbox); setDrawingZone(false); }} onSelect={selectCountry} onHover={setHover} />
+          <MapCanvas ref={mapRef} level={regionLevel ? "regions" : "countries"} styles={styles} choroplethVisible={primaryLayerShown && mapChoroplethVisible} rasterLayer={primaryLayerShown ? visibleRasterLayer : null} analysisLayer={primaryLayerShown ? geoAiResultLayer?.layerName : undefined} rasterClipIds={vegetationHealthAfricaWide || spiAfricaWide || populationAfricaWide ? units.map((unit) => unit.id) : selected ? [selected] : region !== "all" || applied.excluded.length > 0 ? units.filter((unit) => isActive(unit.id)).map((unit) => unit.id) : undefined} geeTileLayers={visibleGeeTileLayers} selected={selected} basemap={basemap} overlays={visibleOverlays} drawBbox={drawBboxActive} alertContext={alertContext} showLocalities={showLocalities} onDrawBbox={(bbox) => { setDrawnBbox(bbox); setDrawingZone(false); }} onSelect={selectCountry} onHover={setHover} />
         )}
         {!bundle && <div className="map-status">{error ? `Indicateurs indisponibles : ${error}` : "Chargement…"}</div>}
 
@@ -1498,7 +1530,17 @@ export default function GeoportalPage() {
           <button className={timelapse ? "on" : ""} onClick={() => (timelapse ? setTimelapse(null) : openTimelapse())} title="Carte animée">
             <Icon name="history" size={15} /><span>Animée</span>
           </button>
-          <button className={compareMode ? "on" : ""} onClick={() => setCompareMode((v) => !v)} title="Comparer deux couches">
+          <button className={compareMode ? "on" : ""} onClick={() => {
+            setCompareMode((current) => {
+              const next = !current;
+              if (next) {
+                setTimelapse(null);
+                setTool(null);
+                setTrendsOpen(false);
+              }
+              return next;
+            });
+          }} title="Comparer deux couches">
             <Icon name="compare" size={15} /><span>Comparer</span>
           </button>
           <span className="map-nav-sep" />
@@ -1630,23 +1672,57 @@ export default function GeoportalPage() {
 
         {geoAiAnalysis && !trendsOpen && <GeoAiAnalysisCard analysis={geoAiAnalysis} onClose={() => setGeoAiAnalysis(null)} />}
 
-        {!compareMode && tool === "legend" && geoAiResultLayer && !trendsOpen && !timelapse && (
-          <div className="map-card legend-card">
-            <div className="legend-header">
-              <strong className="legend-title">{geoAiResultLayer.title}</strong>
-              <button type="button" className="legend-result-close" onClick={() => setGeoAiResultLayer(null)} aria-label="Retirer le résultat GeoAI">×</button>
+        {!compareMode && tool === "legend" && !trendsOpen && !timelapse && (
+          <aside className="map-card legend-card layer-manager" aria-label="Gestionnaire des couches actives">
+            <div className="layer-manager__head">
+              <strong>Légende</strong>
+              <span className="layer-manager__count">{layerManagerItems.length}</span>
+              <button type="button" onClick={() => setTool(null)} aria-label="Fermer la légende">×</button>
             </div>
-            {geoAiResultLayer.territory && <div className="legend-period">Territoire analysé : {geoAiResultLayer.territory}</div>}
-            <img className="raster-legend" src={analysisLegendUrl(geoAiResultLayer.layerName)} alt={`Légende ${geoAiResultLayer.title}`} />
-            <div className="legend-footer">Couche calculée par GeoAI · intersection territoriale</div>
-          </div>
+            {layerManagerItems.length === 0 && <p className="legend-empty">Aucune couche active</p>}
+            {layerManagerItems.map((item) => {
+              const shown = isLayerShown(item.id);
+              const expanded = expandedLayerIds.has(item.id);
+              const overlayId = item.id.startsWith("overlay:") ? item.id.slice(8) : null;
+              return (
+                <section className={`layer-manager__item${shown ? "" : " is-hidden"}`} key={item.id}>
+                  <div className="layer-manager__row">
+                    <button type="button" className="layer-manager__eye" onClick={() => toggleManagedLayer(item.id)} aria-label={shown ? "Masquer la couche" : "Afficher la couche"} aria-pressed={shown}>
+                      <Icon name={shown ? "eye" : "eyeOff"} size={15} />
+                    </button>
+                    <button type="button" className="layer-manager__toggle" onClick={() => toggleManagedLegend(item.id)} aria-expanded={expanded}>
+                      <span>{item.label}</span><b aria-hidden="true">{expanded ? "−" : "+"}</b>
+                    </button>
+                    {(overlayId || item.id.startsWith("gee:") || item.id === "geoai") && (
+                      <button type="button" className="layer-manager__remove" onClick={() => {
+                        if (overlayId) setOverlays((current) => current.filter((id) => id !== overlayId));
+                        else if (item.id.startsWith("gee:")) setGeeTileLayers((current) => current.filter((layer) => `gee:${layer.id}` !== item.id));
+                        else setGeoAiResultLayer(null);
+                      }} aria-label="Retirer la couche">×</button>
+                    )}
+                  </div>
+                  {expanded && (
+                    <div className="layer-manager__legend">
+                      {item.id === "geoai" && geoAiResultLayer && <><div className="legend-period">{geoAiResultLayer.territory ? `Territoire analysé : ${geoAiResultLayer.territory}` : "Résultat spatial GeoAI"}</div><img className="raster-legend" src={analysisLegendUrl(geoAiResultLayer.layerName)} alt="Légende GeoAI" /></>}
+                      {item.id === "product" && activeProductDate && <><div className="legend-period">{activeProductIndicator ? productForecastLabel(activeProductIndicator, activeProductDate) : activeProductDate.period_label}</div><DatabaseLegend legend={productLegend} fallbackUrl={productLegendUrl(activeProductDate)} title={activeProductIndicator?.label_fr ?? ""} indicatorId={activeProductIndicator?.id} /></>}
+                      {item.id === "raster" && rasterIndicator && <><div className="legend-period">{rasterIndicator.description}</div><DatabaseLegend legend={rasterDbLegend} fallbackUrl={rasterLegendUrl(rasterIndicator, rasterPeriod)} title={rasterIndicator.name} indicatorId={rasterIndicator.datasetId} /></>}
+                      {item.id === "choropleth" && <><ul className="legend">{legendFor(indicator).map((entry) => <li key={entry.label}><i style={{ background: entry.color }} /><LegendLabel>{entry.label}</LegendLabel></li>)}<li><i style={{ background: NO_DATA }} /><LegendLabel>Pas de donnée</LegendLabel></li></ul><p className="legend-note">{indicator.howToRead}</p></>}
+                      {overlayId === "firms" && <><ul className="legend legend--classes"><li><i style={{ background: "#f4511e" }} /><LegendLabel>Détection active VIIRS ou MODIS</LegendLabel></li></ul><div className="legend-footer">Source : NASA FIRMS · 3 derniers jours</div></>}
+                      {overlayId && overlayId !== "firms" && <p className="legend-note">{OVERLAYS.find((entry) => entry.id === overlayId)?.description}</p>}
+                      {item.id.startsWith("gee:") && <p className="legend-note">Couche de résultat calculée à la demande.</p>}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
+          </aside>
         )}
 
         {trendsOpen && (
           <TrendsDrawer code={selected ?? "AFR"} title={selected ? `${zoneName(selected)}${selected.includes(".") ? ` · ${countryName(selected.split(".")[0])}` : ""}` : "Afrique"} variable={trendVar} ssp={trendSsp} onVariable={setTrendVar} onSsp={setTrendSsp} onClose={() => setTrendsOpen(false)} />
         )}
 
-        {timelapse && (
+        {!compareMode && timelapse && (
           <TimelapseBar
             variable={timelapse.variable}
             ssp={timelapse.ssp}
@@ -1663,58 +1739,7 @@ export default function GeoportalPage() {
           />
         )}
 
-        {!compareMode && tool === "legend" && !geoAiResultLayer && activeProductDate && !trendsOpen && !timelapse && (
-          <div className="map-card legend-card">
-            <div className="legend-header">
-              <strong className="legend-title">{activeProductIndicator?.label_fr}</strong>
-              {activeProductIndicator?.unit && <span className="legend-unit">{activeProductIndicator.unit}</span>}
-            </div>
-            <div className="legend-period">{activeProductIndicator ? productForecastLabel(activeProductIndicator, activeProductDate) : activeProductDate.period_label}</div>
-            <DatabaseLegend legend={productLegend} fallbackUrl={productLegendUrl(activeProductDate)} title={activeProductIndicator?.label_fr ?? ""} indicatorId={activeProductIndicator?.id} />
-            <div className="legend-footer">{activeProductIndicator?.dates_count} date(s) disponible(s)</div>
-          </div>
-        )}
-        {!compareMode && tool === "legend" && !geoAiResultLayer && rasterIndicator && !activeProductDate && !trendsOpen && !timelapse && (
-          <div className="map-card legend-card">
-            <div className="legend-header">
-              <strong className="legend-title">{rasterIndicator.name}</strong>
-              {rasterIndicator.unit && <span className="legend-unit">{rasterIndicator.unit}</span>}
-            </div>
-            {rasterIndicator.description && <div className="legend-period">{rasterIndicator.description}</div>}
-            <DatabaseLegend legend={rasterDbLegend} fallbackUrl={rasterLegendUrl(rasterIndicator, rasterPeriod)} title={rasterIndicator.name} indicatorId={rasterIndicator.datasetId} />
-            <div className="legend-footer">Source : {rasterIndicator.source}</div>
-          </div>
-        )}
-        {!compareMode && tool === "legend" && !geoAiResultLayer && !rasterIndicator && !activeProductDate && indicatorVisible && !trendsOpen && !timelapse && (
-          <div className="map-card legend-card">
-            <div className="legend-header">
-              <strong className="legend-title">{indicator.short}</strong>
-              {indicator.unit && <span className="legend-unit">{indicator.unit}</span>}
-            </div>
-            <ul className="legend">
-              {legendFor(indicator).map((item) => (
-                <li key={item.label}><i style={{ background: item.color }} /><LegendLabel>{item.label}</LegendLabel></li>
-              ))}
-              <li><i style={{ background: NO_DATA }} /><LegendLabel>Pas de donnée</LegendLabel></li>
-            </ul>
-            <p className="legend-note">{indicator.howToRead}</p>
-          </div>
-        )}
-
-        {!compareMode && tool === "legend" && alertContext && !geoAiResultLayer && !rasterIndicator && !activeProductDate && overlays.includes("firms") && !trendsOpen && !timelapse && (
-          <div className="map-card legend-card">
-            <div className="legend-header">
-              <strong className="legend-title">Feux actifs FIRMS</strong>
-              <span className="legend-unit">3 derniers jours</span>
-            </div>
-            <ul className="legend legend--classes">
-              <li><i style={{ background: "#f4511e" }} /><LegendLabel>Détection active VIIRS ou MODIS</LegendLabel></li>
-            </ul>
-            <div className="legend-footer">Source : NASA FIRMS · position des détections d’origine</div>
-          </div>
-        )}
-
-        {tool === "basemap" && (
+        {!compareMode && tool === "basemap" && (
           <div className="map-card tool-card">
             <div className="map-card-head"><strong>Fond de carte</strong></div>
             {(Object.keys(BASEMAPS) as BasemapId[]).map((id) => (
@@ -1729,7 +1754,7 @@ export default function GeoportalPage() {
           </div>
         )}
 
-        {tool === "overlays" && (
+        {!compareMode && tool === "overlays" && (
           <div className="map-card tool-card">
             <div className="map-card-head"><strong>Surcouches géographiques</strong></div>
             {OVERLAYS.map((o) => (
@@ -1746,7 +1771,7 @@ export default function GeoportalPage() {
           <ComparePanel basemap={basemap} productFamilies={productCatalog.families} onExit={() => setCompareMode(false)} />
         )}
 
-        <div className="map-toolbar">
+        {!compareMode && <div className="map-toolbar">
           <div className="toolbar-group">
             <button className={tool === "legend" ? "on" : ""} onClick={() => setTool(tool === "legend" ? null : "legend")} title="Légende" aria-label="Légende"><Icon name="list" size={16} /></button>
             <button onClick={() => { mapRef.current?.reset(); update({ pays: null }); }} title="Vue d'ensemble" aria-label="Vue d'ensemble"><Icon name="globe" size={16} /></button>
@@ -1757,7 +1782,7 @@ export default function GeoportalPage() {
             <button onClick={() => mapRef.current?.zoomOut()} aria-label="Dézoomer"><Icon name="minus" size={16} /></button>
             <button onClick={() => mapRef.current?.zoomIn()} aria-label="Zoomer"><Icon name="plus" size={16} /></button>
           </div>
-        </div>
+        </div>}
       </section>
       </div>
     </div>

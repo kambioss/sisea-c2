@@ -246,6 +246,24 @@ body:has(.gp) { background: #eef3f0; }
 .raster-legend { display: block; max-width: 100%; width: auto; height: auto; margin: 8px 14px 4px; background: rgba(255,255,255,0.92); border-radius: 4px; }
 .legend-empty { font-size: 11.5px; color: var(--muted); padding: 8px 14px 10px; margin: 0; }
 .legend-result-close { flex: none; width: 24px; height: 24px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface); color: var(--ink-2); font-size: 18px; line-height: 1; cursor: pointer; }
+.layer-manager { padding: 7px; width: min(300px, calc(100% - 36px)); }
+.layer-manager__head { position: sticky; top: -7px; z-index: 2; display: flex; align-items: center; gap: 7px; padding: 5px 5px 9px; border-bottom: 1px solid var(--rule); background: rgba(255,255,255,.97); }
+.layer-manager__head > strong { flex: 1; color: var(--ink); font-size: 13px; }
+.layer-manager__head > button, .layer-manager__remove { display: grid; place-items: center; width: 23px; height: 23px; padding: 0; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 18px; cursor: pointer; }
+.layer-manager__head > button:hover, .layer-manager__remove:hover { background: var(--raised); color: var(--ink); }
+.layer-manager__count { display: grid; min-width: 20px; height: 20px; place-items: center; border-radius: 50%; background: #e8f3ef; color: var(--accent); font-size: 10px; font-weight: 800; }
+.layer-manager__item + .layer-manager__item { border-top: 1px solid var(--rule); }
+.layer-manager__item.is-hidden { opacity: .58; }
+.layer-manager__row { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.layer-manager__eye { display: grid; flex: 0 0 28px; width: 28px; height: 28px; place-items: center; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #688184; cursor: pointer; }
+.layer-manager__eye:hover { background: #eef7f4; color: var(--accent); }
+.layer-manager__toggle { display: flex; flex: 1; align-items: center; gap: 6px; min-width: 0; padding: 9px 4px; border: 0; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+.layer-manager__toggle > span { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 11px; font-weight: 700; line-height: 1.3; }
+.layer-manager__toggle > b { display: grid; flex: 0 0 17px; width: 17px; height: 17px; place-items: center; border-radius: 4px; background: #e8f3ef; color: var(--accent); font-size: 14px; line-height: 1; }
+.layer-manager__legend { padding: 0 4px 8px 30px; }
+.layer-manager__legend .legend-period { padding-left: 0; }
+.layer-manager__legend .raster-legend { max-width: calc(100% - 4px); margin-left: 0; }
+.layer-manager__legend .legend, .layer-manager__legend .legend-note, .layer-manager__legend .legend-footer { padding-left: 0; padding-right: 0; }
 .tool-card { right: 12px; bottom: 62px; z-index: 10060; width: 280px; }
 .tool-option { display: flex; align-items: center; gap: 10px; width: 100%; border: 1px solid transparent; background: transparent; color: var(--ink-2); border-radius: 6px; padding: 6px; font-weight: 600; font-size: 13px; }
 .tool-option:hover { color: var(--ink); background: var(--raised); }
@@ -642,7 +660,7 @@ body:has(.gp) { background: #eef3f0; }
 .compare-line { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 6px rgba(0,0,0,.3); z-index: 5; pointer-events: none; }
 .compare-hitarea { position: absolute; top: 0; bottom: 0; width: 48px; margin-left: -24px; z-index: 6; cursor: col-resize; touch-action: none; }
 .compare-handle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; gap: 2px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-.compare-legend { position: absolute; bottom: 50px; z-index: 10060; max-width: 180px; padding: 10px 12px; border-radius: 6px; background: rgba(255,255,255,.92); backdrop-filter: blur(6px); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 4px; }
+.compare-legend { position: absolute; top: 44px; bottom: auto; z-index: 8; max-width: 180px; max-height: calc(100% - 100px); overflow: auto; padding: 10px 12px; border-radius: 6px; background: rgba(255,255,255,.94); backdrop-filter: blur(6px); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 4px; }
 .compare-legend--left { left: 10px; }
 .compare-legend--right { right: 10px; }
 .compare-legend strong { font-size: 11px; color: var(--ink); line-height: 1.2; }
