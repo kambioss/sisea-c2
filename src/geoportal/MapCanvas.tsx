@@ -11,7 +11,7 @@ import VectorSource from "ol/source/Vector";
 import XYZ from "ol/source/XYZ";
 import ImageWMS from "ol/source/ImageWMS";
 import OlGeoJSON from "ol/format/GeoJSON";
-import { Style, Fill, Stroke } from "ol/style";
+import { Style, Fill, Stroke, Circle as CircleStyle, Text } from "ol/style";
 import { get as getProjection, transformExtent, transform } from "ol/proj";
 import { register } from "ol/proj/proj4";
 import { createXYZ } from "ol/tilegrid";
@@ -19,7 +19,8 @@ import { defaults as defaultControls } from "ol/control";
 import { DragBox } from "ol/interaction";
 import { always } from "ol/events/condition";
 import proj4 from "proj4";
-import type Feature from "ol/Feature";
+import Feature from "ol/Feature";
+import { Point } from "ol/geom";
 import type { Geometry } from "ol/geom";
 import "ol/ol.css";
 
@@ -38,12 +39,13 @@ const TILE_GRID = createXYZ({ extent: MERCATOR.getExtent()!, tileSize: 256, maxZ
 export type BasemapId = "neutre" | "clair" | "sombre" | "satellite";
 
 const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services";
+const PLACES_TILES = `${ESRI}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`;
 
 export const BASEMAPS: Record<BasemapId, { label: string; tiles: string[]; labels: string[]; attribution: string }> = {
   neutre: {
     label: "Relief naturel · sans frontières",
     tiles: [`${ESRI}/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}`],
-    labels: [],
+    labels: [PLACES_TILES],
     attribution: "Esri · USGS · CGIAR · GEBCO",
   },
   clair: {
@@ -61,7 +63,7 @@ export const BASEMAPS: Record<BasemapId, { label: string; tiles: string[]; label
   satellite: {
     label: "Satellite",
     tiles: [`${ESRI}/World_Imagery/MapServer/tile/{z}/{y}/{x}`],
-    labels: [`${ESRI}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`],
+    labels: [PLACES_TILES],
     attribution: "Esri · Maxar · Earthstar Geographics",
   },
 };
@@ -72,6 +74,7 @@ export interface Overlay {
   description: string;
   layerName?: string;
   cqlFilter?: () => string;
+  sldBody?: string;
 }
 
 export const OVERLAYS: Overlay[] = [
@@ -143,6 +146,7 @@ export interface MapCanvasHandle {
   reset(): void;
   clearDrawnBbox(): void;
   showGeoJsonGeometry(geometry: Record<string, unknown>): void;
+  focusAlert(lon: number, lat: number, bbox?: [number, number, number, number]): void;
 }
 
 export type MapLevel = "countries" | "regions";
@@ -164,6 +168,8 @@ interface Props {
   rasterClipIds?: string[];
   geeTileLayers?: GeeTileEntry[];
   drawBbox?: boolean;
+  alertContext?: boolean;
+  showLocalities?: boolean;
   onDrawBbox?(bbox: [number, number, number, number]): void;
   onSelect(iso3: string | null): void;
   onHover(info: { iso3: string; x: number; y: number } | null): void;
@@ -171,13 +177,13 @@ interface Props {
 
 const AFRICA_BOUNDS: [number, number, number, number] = [-20, -36, 54, 38];
 
-export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({ level, styles, choroplethVisible, selected, basemap, overlays, rasterLayer, analysisLayer, rasterClipIds, geeTileLayers, drawBbox, onDrawBbox, onSelect, onHover }, ref) {
+export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({ level, styles, choroplethVisible, selected, basemap, overlays, rasterLayer, analysisLayer, rasterClipIds, geeTileLayers, drawBbox, alertContext = false, showLocalities = true, onDrawBbox, onSelect, onHover }, ref) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<OlMap | null>(null);
   const vectorSource = useRef(new VectorSource<Feature<Geometry>>());
   const geojsonData = useRef<GeoJSON.FeatureCollection | null>(null);
   const basemapRef = useRef<TileLayer<XYZ> | null>(null);
-  const labelRef = useRef<TileLayer<XYZ> | null>(null);
+  const labelRef = useRef<VectorLayer | null>(null);
   const choroplethRef = useRef<VectorLayer<VectorSource<Feature<Geometry>>> | null>(null);
   const selectionRef = useRef<VectorLayer<VectorSource<Feature<Geometry>>> | null>(null);
   const rasterLayersRef = useRef<ImageLayer<ImageWMS>[]>([]);
@@ -188,6 +194,8 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
   const dragBoxRef = useRef<DragBox | null>(null);
   const bboxSourceRef = useRef(new VectorSource<Feature<Geometry>>());
   const bboxLayerRef = useRef<VectorLayer<VectorSource<Feature<Geometry>>> | null>(null);
+  const alertPinSourceRef = useRef(new VectorSource<Feature<Geometry>>());
+  const alertPinLayerRef = useRef<VectorLayer<VectorSource<Feature<Geometry>>> | null>(null);
   const geeTileLayersRef = useRef<Map<string, TileLayer<XYZ>>>(new Map());
   const [ready, setReady] = useState(false);
   const [loadedLevel, setLoadedLevel] = useState<MapLevel | null>(null);
@@ -222,6 +230,30 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
       bboxSourceRef.current.addFeature(feature);
       map.getView().fit(featureGeometry.getExtent(), { padding: [90, 340, 60, 60], duration: 700, maxZoom: 9 });
     },
+    // Deep link from the alerts page: pin the alert location and frame it
+    // (zone bbox when known, otherwise a fixed zoom on the point).
+    focusAlert: (lon, lat, bbox) => {
+      const map = mapRef.current;
+      if (!map) return;
+      if (!alertPinLayerRef.current) {
+        alertPinLayerRef.current = new VectorLayer({
+          source: alertPinSourceRef.current,
+          style: new Style({
+            image: new CircleStyle({ radius: 9, fill: new Fill({ color: "#e65100" }), stroke: new Stroke({ color: "#fff", width: 3 }) }),
+          }),
+          zIndex: 210,
+        });
+        map.addLayer(alertPinLayerRef.current);
+      }
+      const center = transform([lon, lat], "EPSG:4326", map.getView().getProjection());
+      alertPinSourceRef.current.clear();
+      alertPinSourceRef.current.addFeature(new Feature(new Point(center)));
+      if (bbox) {
+        map.getView().fit(transformExtent(bbox, "EPSG:4326", "EPSG:8857"), { padding: [90, 340, 60, 60], duration: 900, maxZoom: 8 });
+      } else {
+        map.getView().animate({ center, zoom: 8, duration: 900 });
+      }
+    },
   }));
 
   // Map creation (once)
@@ -233,9 +265,55 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
     });
     basemapRef.current = basemapLayer;
 
-    const labelLayer = new TileLayer({
-      source: new XYZ({ url: BASEMAPS["clair"].labels[0], projection: "EPSG:3857", tileGrid: TILE_GRID }),
-      zIndex: 100,
+    const placesSource = new VectorSource({
+      url: "/data/africa-populated-places.geojson",
+      format: new OlGeoJSON({ dataProjection: "EPSG:4326", featureProjection: "EPSG:8857" }),
+    });
+    const placeStyles = new Map<string, Style>();
+    const labelLayer = new VectorLayer({
+      source: placesSource,
+      declutter: true,
+      visible: showLocalities,
+      style: (feature, resolution) => {
+        const zoom = mapRef.current?.getView().getZoomForResolution(resolution) ?? 3;
+        const capital = Number(feature.get("capital") ?? 0) === 1;
+        const population = Number(feature.get("population") ?? 0);
+        const sourceMinZoom = Number(feature.get("min_zoom") ?? 9);
+        // At continental zoom retain every national capital. Major and then
+        // regional cities appear progressively, without administrative-name
+        // duplicates from the former raster reference layer.
+        const visible = zoom < 4
+          ? capital
+          : zoom < 5.5
+            ? capital || population >= 1_000_000
+            : zoom < 7
+              ? capital || population >= 250_000
+              : zoom + 0.75 >= sourceMinZoom;
+        if (!visible) return undefined;
+        const name = String(feature.get("name") ?? "");
+        if (!name) return undefined;
+        const key = `${capital ? "capital" : "city"}:${name}`;
+        let style = placeStyles.get(key);
+        if (!style) {
+          style = new Style({
+            image: new CircleStyle({
+              radius: capital ? 3.4 : 2.5,
+              fill: new Fill({ color: "#ffffff" }),
+              stroke: new Stroke({ color: "#18352d", width: 1.4 }),
+            }),
+            text: new Text({
+              text: name,
+              offsetY: -9,
+              font: `${capital ? 700 : 600} ${capital ? 12 : 11}px "Plus Jakarta Sans", sans-serif`,
+              fill: new Fill({ color: "#132f28" }),
+              stroke: new Stroke({ color: "rgba(255,255,255,0.96)", width: 3 }),
+            }),
+          });
+          placeStyles.set(key, style);
+        }
+        return style;
+      },
+      zIndex: 1000,
     });
     labelRef.current = labelLayer;
 
@@ -476,12 +554,19 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
     if (!ready || !basemapRef.current || !labelRef.current) return;
     const config = BASEMAPS[basemap];
     const tiles = config.tiles[0];
-    const labels = config.labels[0];
     basemapRef.current.setVisible(Boolean(tiles));
-    labelRef.current.setVisible(Boolean(labels));
+    labelRef.current.setVisible(showLocalities);
+    labelRef.current.setZIndex(1000);
     if (tiles) basemapRef.current.setSource(new XYZ({ url: tiles, projection: "EPSG:3857", tileGrid: TILE_GRID, attributions: config.attribution }));
-    if (labels) labelRef.current.setSource(new XYZ({ url: labels, projection: "EPSG:3857", tileGrid: TILE_GRID }));
-  }, [basemap, ready]);
+  }, [basemap, ready, showLocalities]);
+
+  // The alert deep link is the only context where city labels override the
+  // normal hide-on-thematic-layer rule. Alert source rasters/events are shown
+  // directly; no regional/Admin-2 aggregation is superimposed.
+  useEffect(() => {
+    if (!ready || !labelRef.current) return;
+    labelRef.current.setVisible(showLocalities);
+  }, [alertContext, showLocalities, ready]);
 
   // Overlay WMS layers
   useEffect(() => {
@@ -499,6 +584,7 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
           _v: RASTER_CACHE_VERSION,
         };
         if (overlay.cqlFilter) params.CQL_FILTER = overlay.cqlFilter();
+        if (overlay.sldBody) params.SLD_BODY = overlay.sldBody;
         const layer = new ImageLayer({
           source: new ImageWMS({ url: wmsBase, params, serverType: "geoserver", ratio: 1 }),
           opacity: 0.95,

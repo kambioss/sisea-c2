@@ -7,6 +7,7 @@ export interface CesiumRasterLayer { layerName: string; style?: string; sldBody?
 
 const WMS_URL = ((import.meta.env.VITE_GEOSERVER_WMS_URL as string | undefined) ?? "/geoserver/geossia/wms").replace(/\/$/, "");
 const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services";
+const PLACES_URL = `${ESRI}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`;
 
 function basemapUrl(id: BasemapId) {
   if (id === "neutre") return `${ESRI}/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}`;
@@ -15,7 +16,7 @@ function basemapUrl(id: BasemapId) {
   return `${ESRI}/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`;
 }
 
-export default function CesiumMap({ basemap, rasterLayer }: { basemap: BasemapId; rasterLayer: CesiumRasterLayer | null }) {
+export default function CesiumMap({ basemap, rasterLayer, showLocalities = true }: { basemap: BasemapId; rasterLayer: CesiumRasterLayer | null; showLocalities?: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const viewer = useRef<Cesium.Viewer | null>(null);
 
@@ -42,16 +43,18 @@ export default function CesiumMap({ basemap, rasterLayer }: { basemap: BasemapId
     instance.imageryLayers.removeAll();
     const baseUrl = basemapUrl(basemap);
     if (baseUrl) instance.imageryLayers.add(new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({ url: baseUrl, maximumLevel: 18 })));
-    if (!rasterLayer) return;
-    rasterLayer.layerName.split(",").forEach((name, index) => {
-      const parameters: Record<string, string | boolean> = { transparent: true, format: "image/png" };
-      const style = rasterLayer.style?.split(",")[index];
-      if (style) parameters.styles = style;
-      if (rasterLayer.sldBody) parameters.sld_body = rasterLayer.sldBody;
-      const provider = new Cesium.WebMapServiceImageryProvider({ url: WMS_URL, layers: name.includes(":") ? name : `geossia:${name}`, parameters });
-      instance.imageryLayers.add(new Cesium.ImageryLayer(provider));
-    });
-  }, [basemap, rasterLayer?.layerName, rasterLayer?.style, rasterLayer?.sldBody]);
+    if (rasterLayer) {
+      rasterLayer.layerName.split(",").forEach((name, index) => {
+        const parameters: Record<string, string | boolean> = { transparent: true, format: "image/png" };
+        const style = rasterLayer.style?.split(",")[index];
+        if (style) parameters.styles = style;
+        if (rasterLayer.sldBody) parameters.sld_body = rasterLayer.sldBody;
+        const provider = new Cesium.WebMapServiceImageryProvider({ url: WMS_URL, layers: name.includes(":") ? name : `geossia:${name}`, parameters });
+        instance.imageryLayers.add(new Cesium.ImageryLayer(provider));
+      });
+    }
+    if (showLocalities) instance.imageryLayers.add(new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({ url: PLACES_URL, maximumLevel: 19 })));
+  }, [basemap, rasterLayer?.layerName, rasterLayer?.style, rasterLayer?.sldBody, showLocalities]);
 
   return <div ref={host} className="cesium-map" aria-label="Globe 3D Cesium" />;
 }

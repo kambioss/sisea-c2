@@ -154,6 +154,13 @@ const GEOAI_PRODUCT_TO_RASTER: Record<string, string> = {
   edgar_n2o: "raster-edgar-n2o",
 };
 
+/* Surcouches activées par le lien profond ?theme=… depuis la page Alertes. */
+const THEME_OVERLAYS: Record<string, string[]> = {
+  inondations: [],
+  secheresse: [],
+  feux: ["firms"],
+};
+
 function productTileBounds(layerName: string): [number, number, number, number] | null {
   const match = /_(\d+)(n|s)_(\d+)(e|w)_[a-f0-9]+$/i.exec(layerName);
   if (!match) return null;
@@ -513,6 +520,7 @@ export default function GeoportalPage() {
   const navigate = useNavigate();
   const { bundle, error } = useBundle();
   const [params, setParams] = useSearchParams();
+  const alertContext = Boolean(params.get("theme") && (params.get("focus") || params.get("bbox")));
   const indicator = indicatorById(params.get("ind"));
   const selected = params.get("pays");
   const mapRef = useRef<MapCanvasHandle>(null);
@@ -520,7 +528,10 @@ export default function GeoportalPage() {
 
   const [panelOpen, setPanelOpen] = useState(true);
   const [indicatorVisible, setIndicatorVisible] = useState(false);
-  const [rasterId, setRasterId] = useState<string | null>(() => params.get("raster"));
+  const [rasterId, setRasterId] = useState<string | null>(() =>
+    params.get("raster")
+    ?? (!params.get("theme") && !params.get("product") ? "raster-gefs-5d" : null),
+  );
   const [period, setPeriod] = useState(() => params.get("date") || "");
   const [panelTab, setPanelTab] = useState<PanelTab>("layers");
   const [subdivision, setSubdivision] = useState<Subdivision>("pays");
@@ -560,6 +571,29 @@ export default function GeoportalPage() {
   const [tutorialStep, setTutorialStep] = useState<number | null>(null);
   const [geoAiAnalysis, setGeoAiAnalysis] = useState<GeoAiAnalysis | null>(null);
   const [geoAiResultLayer, setGeoAiResultLayer] = useState<GeoAiResultLayer | null>(null);
+
+  // Lien profond depuis la page Alertes : ?focus=lon,lat (avec &bbox=ouest,sud,est,nord
+  // pour une zone) épingle le lieu et cadre la vue au montage du géoportail ;
+  // &theme=<risque> active en prime la couche thématique correspondante.
+  useEffect(() => {
+    const theme = params.get("theme");
+    if (theme && THEME_OVERLAYS[theme]?.length) {
+      const wanted = THEME_OVERLAYS[theme];
+      setOverlays((prev) => (wanted.some((id) => !prev.includes(id)) ? [...new Set([...prev, ...wanted])] : prev));
+      setTool("legend");
+    }
+    const focus = params.get("focus");
+    const bboxParam = params.get("bbox");
+    if (!focus && !bboxParam) return;
+    const [lon, lat] = (focus ?? "").split(",").map(Number);
+    const bbox = bboxParam?.split(",").map(Number);
+    const validBbox = Boolean(bbox && bbox.length === 4 && bbox.every((value) => Number.isFinite(value)));
+    if (Number.isFinite(lon) && Number.isFinite(lat)) {
+      mapRef.current?.focusAlert(lon, lat, validBbox ? (bbox as [number, number, number, number]) : undefined);
+    } else if (validBbox) {
+      mapRef.current?.fitBounds(bbox as [number, number, number, number]);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!timelapse) return;
@@ -1175,6 +1209,9 @@ export default function GeoportalPage() {
       : rasterIndicator?.id === "raster-tci" ? tciSldFor(rasterPeriod.layerName)
       : rasterIndicator?.id === "raster-vci" || rasterIndicator?.id === "raster-vhi" ? vegetationHealthSldFor(rasterPeriod.layerName) : undefined,
   } : null;
+  const mapChoroplethVisible = !rasterIndicator && !activeProductDate && (indicatorVisible || Boolean(timelapse));
+  // Stable geographic reference, including when a source raster is shown.
+  const showLocalities = true;
 
   return (
     <div className="gp">
@@ -1439,10 +1476,10 @@ export default function GeoportalPage() {
       <section className="gp-map">
         {mode3d ? (
           <Suspense fallback={<div className="map-status">Chargement du globe 3D…</div>}>
-            <CesiumMap basemap={basemap} rasterLayer={visibleRasterLayer} />
+            <CesiumMap basemap={basemap} rasterLayer={visibleRasterLayer} showLocalities={showLocalities} />
           </Suspense>
         ) : (
-          <MapCanvas ref={mapRef} level={regionLevel ? "regions" : "countries"} styles={styles} choroplethVisible={!rasterIndicator && !activeProductDate && (indicatorVisible || Boolean(timelapse))} rasterLayer={visibleRasterLayer} analysisLayer={geoAiResultLayer?.layerName} rasterClipIds={vegetationHealthAfricaWide || spiAfricaWide || populationAfricaWide ? units.map((unit) => unit.id) : selected ? [selected] : region !== "all" || applied.excluded.length > 0 ? units.filter((unit) => isActive(unit.id)).map((unit) => unit.id) : undefined} geeTileLayers={geeTileLayers} selected={selected} basemap={basemap} overlays={overlays} drawBbox={drawBboxActive} onDrawBbox={(bbox) => { setDrawnBbox(bbox); setDrawingZone(false); }} onSelect={selectCountry} onHover={setHover} />
+          <MapCanvas ref={mapRef} level={regionLevel ? "regions" : "countries"} styles={styles} choroplethVisible={mapChoroplethVisible} rasterLayer={visibleRasterLayer} analysisLayer={geoAiResultLayer?.layerName} rasterClipIds={vegetationHealthAfricaWide || spiAfricaWide || populationAfricaWide ? units.map((unit) => unit.id) : selected ? [selected] : region !== "all" || applied.excluded.length > 0 ? units.filter((unit) => isActive(unit.id)).map((unit) => unit.id) : undefined} geeTileLayers={geeTileLayers} selected={selected} basemap={basemap} overlays={overlays} drawBbox={drawBboxActive} alertContext={alertContext} showLocalities={showLocalities} onDrawBbox={(bbox) => { setDrawnBbox(bbox); setDrawingZone(false); }} onSelect={selectCountry} onHover={setHover} />
         )}
         {!bundle && <div className="map-status">{error ? `Indicateurs indisponibles : ${error}` : "Chargement…"}</div>}
 
@@ -1661,6 +1698,19 @@ export default function GeoportalPage() {
               <li><i style={{ background: NO_DATA }} /><LegendLabel>Pas de donnée</LegendLabel></li>
             </ul>
             <p className="legend-note">{indicator.howToRead}</p>
+          </div>
+        )}
+
+        {!compareMode && tool === "legend" && alertContext && !geoAiResultLayer && !rasterIndicator && !activeProductDate && overlays.includes("firms") && !trendsOpen && !timelapse && (
+          <div className="map-card legend-card">
+            <div className="legend-header">
+              <strong className="legend-title">Feux actifs FIRMS</strong>
+              <span className="legend-unit">3 derniers jours</span>
+            </div>
+            <ul className="legend legend--classes">
+              <li><i style={{ background: "#f4511e" }} /><LegendLabel>Détection active VIIRS ou MODIS</LegendLabel></li>
+            </ul>
+            <div className="legend-footer">Source : NASA FIRMS · position des détections d’origine</div>
           </div>
         )}
 

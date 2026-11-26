@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import capLogo from "../cap-logo.png";
+import { subscribeSapLayer } from "../services/alertsCache";
+import type { SapLayerSnapshot, SapLayerState } from "../services/alertsCache";
 
 /* ════════════════════════════════════════════════════════════════════════
    Page Alertes — surveillance multirisque.
@@ -19,6 +22,7 @@ const WFS = (typeNames: string, extra: Record<string, string> = {}) =>
 
 const regionNames = new Intl.DisplayNames(["fr"], { type: "region" });
 function countryLabel(code: string) {
+  if (GAUL_TERRITORY_LABELS[code]) return GAUL_TERRITORY_LABELS[code];
   try { return regionNames.of(code) || code; } catch { return code; }
 }
 
@@ -35,6 +39,66 @@ function fmtDay(iso?: string | null) {
   if (!iso) return "—";
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+}
+
+/* GeoServer renvoie les bbox WFS en axes lat,lon : [minLat, minLon, maxLat, maxLon] —
+   converti ici en [ouest, sud, est, nord] pour le Géoportail. */
+function bboxToBox(bbox?: number[] | null): [number, number, number, number] | null {
+  if (!bbox || bbox.length < 4) return null;
+  return [bbox[1], bbox[0], bbox[3], bbox[2]];
+}
+
+/* GAUL 2024 code « x... » les territoires sans ISO 3166 (disputés ou îles du
+   cadrage Afrique) : Intl.DisplayNames ne les résout pas et les couches SAP
+   affichaient le code brut (« xMS »). Étiquettes françaises de référence. */
+const GAUL_TERRITORY_LABELS: Record<string, string> = {
+  xAB: "Abyei",
+  xHT: "Triangle de Hala'ib",
+  xIT: "Triangle d'Ilemi",
+  xMS: "Bīr Ṭawīl",
+  xFR: "Îles Éparses",
+};
+
+/* Les 14 régions GAUL 2024 livrées sans toponyme (« Administrative Unit Not
+   Available ») : noms repris du pays parent. La migration 0063 corrige la
+   base ; cette table couvre les émissions encore en cache navigateur et sert
+   de repli immédiat pendant que la localité la plus proche est résolue. */
+const GAUL_ZONE_FALLBACK_NAMES: Record<string, string> = {
+  "xAB.1000": "Abyei",
+  "xHT.1349": "Triangle de Hala'ib",
+  "xIT.1351": "Triangle d'Ilemi",
+  "xMS.1132": "Bīr Ṭawīl",
+  "ATF.1303": "Terres australes françaises",
+  "BVT.1100": "Île Bouvet",
+  "ESH.1710": "Sahara occidental",
+  "HMD.1350": "Îles Heard-et-MacDonald",
+  "MYT.1473": "Mayotte",
+  "xFR.1070": "Bassas da India",
+  "xFR.1302": "Île Europa",
+  "xFR.1331": "Îles Glorieuses",
+  "xFR.1352": "Île Juan de Nova",
+  "xFR.1650": "Île Tromelin",
+};
+
+const UNNAMED_ZONE_NAME = "administrative unit not available";
+function isUnnamedZone(name?: string | null): boolean {
+  return !name || name.toLowerCase() === UNNAMED_ZONE_NAME;
+}
+
+/* Lien profond vers le Géoportail : épingle le lieu de l'alerte, cadre la vue
+   et demande la couche thématique correspondant au risque. */
+function geoportalAlertHref(
+  lon: number,
+  lat: number,
+  theme: "inondations" | "secheresse" | "feux",
+  bbox?: [number, number, number, number],
+  source?: { raster?: string; product?: string },
+): string {
+  const query = new URLSearchParams({ focus: `${lon.toFixed(4)},${lat.toFixed(4)}`, theme });
+  if (bbox) query.set("bbox", bbox.map((value) => value.toFixed(3)).join(","));
+  if (source?.raster) query.set("raster", source.raster);
+  if (source?.product) query.set("product", source.product);
+  return `/geoportail?${query.toString()}`;
 }
 
 /* ───────────────────────── Inondations (existant) ─────────────────────── */
@@ -110,6 +174,31 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
   } catch {
     return "";
   }
+}
+
+const GAUL_ZONE_CONTEXTS: Record<string, string> = {
+  "xAB.1000": "Frontière Soudan–Soudan du Sud",
+  "xHT.1349": "Frontière Égypte–Soudan",
+  "xIT.1351": "Frontière Kenya–Soudan du Sud",
+  "xMS.1132": "Entre l’Égypte et le Soudan",
+  "xFR.1070": "Canal du Mozambique",
+  "xFR.1302": "Canal du Mozambique",
+  "xFR.1331": "Canal du Mozambique",
+  "xFR.1352": "Canal du Mozambique",
+  "xFR.1650": "Océan Indien",
+};
+
+function zoneDisplayName(zone: { iso3: string; zone_key: string; zone_name: string }): string {
+  const name = zone.zone_name?.trim();
+  if (!isUnnamedZone(name) && name.toUpperCase() !== zone.iso3.toUpperCase()) return name;
+  return GAUL_ZONE_FALLBACK_NAMES[zone.zone_key]
+    ?? GAUL_TERRITORY_LABELS[zone.iso3]
+    ?? countryLabel(zone.iso3.length === 3 ? iso3to2(zone.iso3) : zone.iso3);
+}
+
+function zoneDisplayContext(zone: { iso3: string; zone_key: string }): string {
+  return GAUL_ZONE_CONTEXTS[zone.zone_key]
+    ?? countryLabel(zone.iso3.length === 3 ? iso3to2(zone.iso3) : zone.iso3);
 }
 
 /* ───────────────────────── Sécheresse (SAP) ───────────────────────────── */
@@ -204,25 +293,59 @@ const TREND_LABEL: Record<string, string> = {
 };
 
 function DroughtSection() {
-  const [regions, setRegions] = useState<DroughtZone[]>([]);
-  const [countries, setCountries] = useState<DroughtZone[]>([]);
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const navigate = useNavigate();
+  const [regionSnapshot, setRegionSnapshot] = useState<SapLayerSnapshot<DroughtZone> | null>(null);
+  const [countrySnapshot, setCountrySnapshot] = useState<SapLayerSnapshot<DroughtZone> | null>(null);
+  const [regionFailed, setRegionFailed] = useState(false);
+  const [countryFailed, setCountryFailed] = useState(false);
   const [horizon, setHorizon] = useState<HorizonClass>("court");
+  const [levelFilter, setLevelFilter] = useState<2 | 3 | null>(null);
 
   useEffect(() => {
-    const ctrl = new AbortController();
-    const load = (layer: string) =>
-      fetch(WFS(layer, { propertyName: DROUGHT_PROPS }), { signal: ctrl.signal })
-        .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
-        .then((json) => (json.features ?? []).map((f: { properties: DroughtZone }) => f.properties));
-    Promise.all([
-      load("geossia:drought_alert_region_current"),
-      load("geossia:drought_alert_country_current"),
-    ])
-      .then(([reg, cty]) => { setRegions(reg); setCountries(cty); setState("ready"); })
-      .catch((e: Error) => { if (e.name !== "AbortError") setState("error"); });
-    return () => ctrl.abort();
+    const onLayer = (
+      setSnapshot: (snapshot: SapLayerSnapshot<DroughtZone> | null) => void,
+      setFailed: (failed: boolean) => void,
+    ) => (layerState: SapLayerState<DroughtZone>) => {
+      if (layerState.status === "ready") {
+        setSnapshot(layerState.snapshot);
+        setFailed(false);
+      } else {
+        setFailed(layerState.status === "error");
+      }
+    };
+    const unsubscribeRegion = subscribeSapLayer<DroughtZone>(
+      "geossia:drought_alert_region_current",
+      WFS("geossia:drought_alert_region_current", { propertyName: DROUGHT_PROPS }),
+      onLayer(setRegionSnapshot, setRegionFailed),
+    );
+    const unsubscribeCountry = subscribeSapLayer<DroughtZone>(
+      "geossia:drought_alert_country_current",
+      WFS("geossia:drought_alert_country_current", { propertyName: DROUGHT_PROPS }),
+      onLayer(setCountrySnapshot, setCountryFailed),
+    );
+    return () => { unsubscribeRegion(); unsubscribeCountry(); };
   }, []);
+
+  const regions = useMemo(
+    () => regionSnapshot?.features.map((f) => f.properties) ?? [],
+    [regionSnapshot],
+  );
+  const countries = useMemo(
+    () => countrySnapshot?.features.map((f) => f.properties) ?? [],
+    [countrySnapshot],
+  );
+  const boxes = useMemo(() => {
+    const map = new Map<string, [number, number, number, number]>();
+    for (const f of regionSnapshot?.features ?? []) {
+      const box = bboxToBox(f.bbox);
+      if (box) map.set(f.properties.zone_key, box);
+    }
+    return map;
+  }, [regionSnapshot]);
+  const state: "loading" | "ready" | "error" =
+    regionSnapshot && countrySnapshot ? "ready"
+      : regionFailed || countryFailed ? "error"
+        : "loading";
 
   const active = HORIZONS.find((h) => h.id === horizon)!;
 
@@ -241,13 +364,29 @@ function DroughtSection() {
       .sort((a, b) =>
         levelOf(b, active.attr) - levelOf(a, active.attr) ||
         (b.peak_alert_level ?? 0) - (a.peak_alert_level ?? 0) ||
-        a.zone_name.localeCompare(b.zone_name, "fr"));
+        zoneDisplayName(a).localeCompare(zoneDisplayName(b), "fr"));
   }, [regions, active.attr]);
 
   const countriesOnAlert = useMemo(
     () => new Set(ranked.map((z) => z.iso3)).size,
     [ranked],
   );
+
+  const visible = useMemo(
+    () => (levelFilter === null
+      ? ranked
+      : ranked.filter((z) => Math.min(levelOf(z, active.attr), 3) === levelFilter)),
+    [ranked, active.attr, levelFilter],
+  );
+
+  const openZone = (zoneKey: string) => {
+    const box = boxes.get(zoneKey);
+    if (!box) return;
+    const source = horizon === "court"
+      ? { raster: "raster-spi-forecast-5d" }
+      : { product: horizon === "moyen" ? "gdo_fcst_3m" : "gdo_fcst_6m" };
+    navigate(geoportalAlertHref((box[0] + box[2]) / 2, (box[1] + box[3]) / 2, "secheresse", box, source));
+  };
 
   const issue = regions[0]?.issue_date;
   const spiDate = regions.find((z) => z.spi_source_date)?.spi_source_date;
@@ -297,53 +436,57 @@ function DroughtSection() {
             ))}
           </div>
 
-          {/* ── Compteurs ── */}
+          {/* ── Compteurs — cliquables, filtrent la liste et la carte ── */}
           <div className="cap-stats">
-            <div className={`cap-stat${counts[3] > 0 ? " cap-stat--alert" : ""}`}>
+            <button type="button" className={`cap-stat cap-stat--filter${counts[3] > 0 ? " cap-stat--alert" : ""}${levelFilter === 3 ? " active" : ""}`} aria-pressed={levelFilter === 3} onClick={() => setLevelFilter(levelFilter === 3 ? null : 3)}>
               <span className="cap-stat-num" style={counts[3] > 0 ? { color: DROUGHT_LEVELS[3].color } : undefined}>{counts[3]}</span>
-              <span className="cap-stat-label">Régions en alerte</span>
-            </div>
-            <div className="cap-stat">
+              <span className="cap-stat-label">Alerte</span>
+            </button>
+            <button type="button" className={`cap-stat cap-stat--filter${levelFilter === 2 ? " active" : ""}`} aria-pressed={levelFilter === 2} onClick={() => setLevelFilter(levelFilter === 2 ? null : 2)}>
               <span className="cap-stat-num" style={counts[2] > 0 ? { color: DROUGHT_LEVELS[2].color } : undefined}>{counts[2]}</span>
-              <span className="cap-stat-label">En avertissement</span>
-            </div>
+              <span className="cap-stat-label">Avertissement</span>
+            </button>
             <div className="cap-stat">
               <span className="cap-stat-num">{countriesOnAlert}</span>
-              <span className="cap-stat-label">Pays concernés</span>
+              <span className="cap-stat-label">Pays/zone concernés</span>
             </div>
           </div>
 
-          {/* ── Zones en alerte, triées par sévérité ── */}
+          {/* ── Zones en alerte, triées par sévérité — clic → Géoportail ── */}
           {ranked.length > 0 ? (
             <div className="cap-countries">
               <h3>Régions en alerte ou avertissement — {active.label.toLowerCase()} ({active.sub})</h3>
-              <ul>
-                {ranked.map((z) => {
-                  const lvl = DROUGHT_LEVELS[Math.min(levelOf(z, active.attr), 3)];
-                  const national = countryByIso.get(z.iso3);
-                  return (
-                    <li key={z.zone_key}>
-                      <div className="cap-country-left">
-                        <span className="cap-country-dot" style={{ background: lvl.color }} />
-                        <div>
-                          <span className="cap-country-sev" style={{ color: lvl.color }}>{lvl.label}</span>
-                          <span className="cap-country-detail">
-                            {TREND_LABEL[z.trend ?? ""] ?? "Tendance inconnue"}
-                            {typeof z.spi_now === "number" && <>{" · "}SPI {z.spi_now.toFixed(1)}</>}
-                            {typeof z.vhi_now === "number" && <>{" · "}VHI {Math.round(z.vhi_now)}</>}
-                            {national && (national.alert_level_now ?? 0) >= 1 && " · pays en vigilance"}
-                          </span>
+              {visible.length > 0 ? (
+                <ul>
+                  {visible.map((z) => {
+                    const lvl = DROUGHT_LEVELS[Math.min(levelOf(z, active.attr), 3)];
+                    const national = countryByIso.get(z.iso3);
+                    return (
+                      <li key={z.zone_key} title="Voir la région sur le Géoportail" onClick={() => openZone(z.zone_key)}>
+                        <div className="cap-country-left">
+                          <span className="cap-country-dot" style={{ background: lvl.color }} />
+                          <div>
+                            <span className="cap-country-sev" style={{ color: lvl.color }}>{lvl.label}</span>
+                            <span className="cap-country-detail">
+                              {TREND_LABEL[z.trend ?? ""] ?? "Tendance inconnue"}
+                              {typeof z.spi_now === "number" && <>{" · "}SPI {z.spi_now.toFixed(1)}</>}
+                              {typeof z.vhi_now === "number" && <>{" · "}VHI {Math.round(z.vhi_now)}</>}
+                              {national && (national.alert_level_now ?? 0) >= 1 && " · pays en vigilance"}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="cap-country-right">
-                        <span className="cap-country-name">{z.zone_name}</span>
-                        <span className="cap-country-date">{countryLabel(z.iso3.length === 3 ? iso3to2(z.iso3) : z.iso3)}</span>
-                        <TrajectoryDots zone={z} />
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+                        <div className="cap-country-right">
+                          <span className="cap-country-name">{zoneDisplayName(z)}</span>
+                          <span className="cap-country-date">{zoneDisplayContext(z)}</span>
+                          <TrajectoryDots zone={z} />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="muted">Aucune région à ce niveau de sévérité sur cet horizon.</p>
+              )}
             </div>
           ) : (
             <div className="flood-empty">
@@ -396,20 +539,40 @@ const FIRE_LEVELS: Record<number, { label: string; color: string }> = {
 };
 
 function FireSection() {
-  const [regions, setRegions] = useState<FireZone[]>([]);
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const navigate = useNavigate();
+  const [snapshot, setSnapshot] = useState<SapLayerSnapshot<FireZone> | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [levelFilter, setLevelFilter] = useState<2 | 3 | null>(null);
 
   useEffect(() => {
-    const ctrl = new AbortController();
-    fetch(WFS("geossia:fire_alert_region_current", { propertyName: FIRE_PROPS }), { signal: ctrl.signal })
-      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
-      .then((json) => {
-        setRegions((json.features ?? []).map((f: { properties: FireZone }) => f.properties));
-        setState("ready");
-      })
-      .catch((e: Error) => { if (e.name !== "AbortError") setState("error"); });
-    return () => ctrl.abort();
+    const unsubscribe = subscribeSapLayer<FireZone>(
+      "geossia:fire_alert_region_current",
+      WFS("geossia:fire_alert_region_current", { propertyName: FIRE_PROPS }),
+      (layerState: SapLayerState<FireZone>) => {
+        if (layerState.status === "ready") {
+          setSnapshot(layerState.snapshot);
+          setFailed(false);
+        } else {
+          setFailed(layerState.status === "error");
+        }
+      },
+    );
+    return unsubscribe;
   }, []);
+
+  const regions = useMemo(
+    () => snapshot?.features.map((f) => f.properties) ?? [],
+    [snapshot],
+  );
+  const boxes = useMemo(() => {
+    const map = new Map<string, [number, number, number, number]>();
+    for (const f of snapshot?.features ?? []) {
+      const box = bboxToBox(f.bbox);
+      if (box) map.set(f.properties.zone_key, box);
+    }
+    return map;
+  }, [snapshot]);
+  const state: "loading" | "ready" | "error" = snapshot ? "ready" : failed ? "error" : "loading";
 
   const ranked = useMemo(() =>
     regions
@@ -417,7 +580,7 @@ function FireSection() {
       .sort((a, b) =>
         (b.alert_level_now ?? 0) - (a.alert_level_now ?? 0) ||
         (b.peak_alert_level ?? 0) - (a.peak_alert_level ?? 0) ||
-        a.zone_name.localeCompare(b.zone_name, "fr")),
+        zoneDisplayName(a).localeCompare(zoneDisplayName(b), "fr")),
     [regions],
   );
 
@@ -434,6 +597,19 @@ function FireSection() {
     () => new Set(ranked.map((z) => z.iso3)).size,
     [ranked],
   );
+
+  const visible = useMemo(
+    () => (levelFilter === null
+      ? ranked
+      : ranked.filter((z) => Math.min(z.alert_level_now ?? 0, 3) === levelFilter)),
+    [ranked, levelFilter],
+  );
+
+  const openZone = (zoneKey: string) => {
+    const box = boxes.get(zoneKey);
+    if (!box) return;
+    navigate(geoportalAlertHref((box[0] + box[2]) / 2, (box[1] + box[3]) / 2, "feux", box));
+  };
 
   const issue = regions[0]?.issue_date;
 
@@ -460,48 +636,52 @@ function FireSection() {
       {state === "ready" && (
         <>
           <div className="cap-stats">
-            <div className={`cap-stat${counts[3] > 0 ? " cap-stat--alert" : ""}`}>
+            <button type="button" className={`cap-stat cap-stat--filter${counts[3] > 0 ? " cap-stat--alert" : ""}${levelFilter === 3 ? " active" : ""}`} aria-pressed={levelFilter === 3} onClick={() => setLevelFilter(levelFilter === 3 ? null : 3)}>
               <span className="cap-stat-num" style={counts[3] > 0 ? { color: FIRE_LEVELS[3].color } : undefined}>{counts[3]}</span>
-              <span className="cap-stat-label">Régions en alerte</span>
-            </div>
-            <div className="cap-stat">
+              <span className="cap-stat-label">Alerte</span>
+            </button>
+            <button type="button" className={`cap-stat cap-stat--filter${levelFilter === 2 ? " active" : ""}`} aria-pressed={levelFilter === 2} onClick={() => setLevelFilter(levelFilter === 2 ? null : 2)}>
               <span className="cap-stat-num" style={counts[2] > 0 ? { color: FIRE_LEVELS[2].color } : undefined}>{counts[2]}</span>
-              <span className="cap-stat-label">En avertissement</span>
-            </div>
+              <span className="cap-stat-label">Avertissement</span>
+            </button>
             <div className="cap-stat">
               <span className="cap-stat-num">{countriesOnAlert}</span>
-              <span className="cap-stat-label">Pays concernés</span>
+              <span className="cap-stat-label">Pays/zone concernés</span>
             </div>
           </div>
 
           {ranked.length > 0 ? (
             <div className="cap-countries">
               <h3>Régions en alerte ou avertissement — danger feux</h3>
-              <ul>
-                {ranked.map((z) => {
-                  const lvl = FIRE_LEVELS[Math.min(z.alert_level_now ?? 0, 3)];
-                  return (
-                    <li key={z.zone_key}>
-                      <div className="cap-country-left">
-                        <span className="cap-country-dot" style={{ background: lvl.color }} />
-                        <div>
-                          <span className="cap-country-sev" style={{ color: lvl.color }}>{lvl.label}</span>
-                          <span className="cap-country-detail">
-                            {TREND_LABEL[z.trend ?? ""] ?? "Tendance inconnue"}
-                            {typeof z.detections_24h === "number" && z.detections_24h > 0 && <>{" · "}{z.detections_24h} foyers 24h</>}
-                            {typeof z.detections_7d === "number" && z.detections_7d > 0 && <>{" · "}{z.detections_7d} foyers 7j</>}
-                            {typeof z.share_p95 === "number" && z.share_p95 > 0 && <>{" · "}{Math.round(z.share_p95 * 100)}% surface FWI ≥ P95</>}
-                          </span>
+              {visible.length > 0 ? (
+                <ul>
+                  {visible.map((z) => {
+                    const lvl = FIRE_LEVELS[Math.min(z.alert_level_now ?? 0, 3)];
+                    return (
+                      <li key={z.zone_key} title="Voir la région sur le Géoportail" onClick={() => openZone(z.zone_key)}>
+                        <div className="cap-country-left">
+                          <span className="cap-country-dot" style={{ background: lvl.color }} />
+                          <div>
+                            <span className="cap-country-sev" style={{ color: lvl.color }}>{lvl.label}</span>
+                            <span className="cap-country-detail">
+                              {TREND_LABEL[z.trend ?? ""] ?? "Tendance inconnue"}
+                              {typeof z.detections_24h === "number" && z.detections_24h > 0 && <>{" · "}{z.detections_24h} foyers 24h</>}
+                              {typeof z.detections_7d === "number" && z.detections_7d > 0 && <>{" · "}{z.detections_7d} foyers 7j</>}
+                              {typeof z.share_p95 === "number" && z.share_p95 > 0 && <>{" · "}{Math.round(z.share_p95 * 100)}% surface FWI ≥ P95</>}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="cap-country-right">
-                        <span className="cap-country-name">{z.zone_name}</span>
-                        <span className="cap-country-date">{countryLabel(z.iso3.length === 3 ? iso3to2(z.iso3) : z.iso3)}</span>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+                        <div className="cap-country-right">
+                          <span className="cap-country-name">{zoneDisplayName(z)}</span>
+                          <span className="cap-country-date">{zoneDisplayContext(z)}</span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="muted">Aucune région à ce niveau de sévérité.</p>
+              )}
             </div>
           ) : (
             <div className="flood-empty">
@@ -525,9 +705,11 @@ const ISO3TO2: Record<string, string> = {
   EGY: "EG", ERI: "ER", ESH: "EH", ETH: "ET", GAB: "GA", GHA: "GH", GIN: "GN",
   GMB: "GM", GNB: "GW", GNQ: "GQ", KEN: "KE", LBR: "LR", LBY: "LY", LSO: "LS",
   MAR: "MA", MDG: "MG", MLI: "ML", MOZ: "MZ", MRT: "MR", MUS: "MU", MWI: "MW",
-  NAM: "NA", NER: "NE", NGA: "NG", RWA: "RW", SDN: "SD", SEN: "SN", SLE: "SL",
-  SOM: "SO", SSD: "SS", STP: "ST", SWZ: "SZ", SYC: "SC", TCD: "TD", TGO: "TG",
-  TUN: "TN", TZA: "TZ", UGA: "UG", ZAF: "ZA", ZMB: "ZM", ZWE: "ZW",
+  MYT: "YT", NAM: "NA", NER: "NE", NGA: "NG", RWA: "RW", SDN: "SD", SEN: "SN",
+  SLE: "SL", SOM: "SO", SSD: "SS", STP: "ST", SWZ: "SZ", SYC: "SC", TCD: "TD",
+  TGO: "TG", TUN: "TN", TZA: "TZ", UGA: "UG", ZAF: "ZA", ZMB: "ZM", ZWE: "ZW",
+  /* Îles du cadrage Afrique hors continent, présentes dans GAUL 2024. */
+  ATF: "TF", BVT: "BV", HMD: "HM",
 };
 function iso3to2(iso3: string): string {
   return ISO3TO2[iso3.toUpperCase()] ?? iso3;
@@ -564,6 +746,7 @@ function AlertAccordion({ icon, title, count, countLabel, defaultOpen, children 
 /* ───────────────────────────── Page ───────────────────────────────────── */
 
 export default function AlertsPage() {
+  const navigate = useNavigate();
   const [gauges, setGauges] = useState<GaugeFeature[]>([]);
   const [flashes, setFlashes] = useState<FlashFeature[]>([]);
   const [gaugeState, setGaugeState] = useState<"loading" | "ready" | "error">("loading");
@@ -684,14 +867,13 @@ export default function AlertsPage() {
 
       <section className="section tight">
         <div className="container">
-          <div className="report-accordion-list">
+          <div className="report-accordion-list alerts-accordion-list">
             {/* ════ 01 · Inondations ════ */}
             <AlertAccordion
               icon="🌊"
               title="Inondations"
               count={totalAlerts}
               countLabel={totalAlerts > 0 ? `${totalAlerts} alerte${totalAlerts > 1 ? "s" : ""} active${totalAlerts > 1 ? "s" : ""}` : "Aucune alerte active"}
-              defaultOpen
             >
               <div className={`flood-state ${state}`}>
                 <i />
@@ -721,7 +903,7 @@ export default function AlertsPage() {
                           const sev = SEVERITY_MAP[g.severity];
                           const loc = localities[g.gaugeId];
                           return (
-                            <li key={g.gaugeId}>
+                            <li key={g.gaugeId} title="Voir la station sur le Géoportail" onClick={() => navigate(geoportalAlertHref(g.lon, g.lat, "inondations", undefined, { product: "google_flood_gauges" }))}>
                               <div className="cap-country-left">
                                 <span className="cap-country-dot" style={{ background: sev?.color ?? "#fbc02d" }} />
                                 <div>
@@ -757,7 +939,10 @@ export default function AlertsPage() {
                           const locality = p.event_id ? flashLocalities[p.event_id] : "";
                           const countries = (p.country_codes || []).map(countryLabel).join(", ");
                           return (
-                            <li key={p.event_id}>
+                            <li key={p.event_id} title="Voir la zone sur le Géoportail" onClick={() => {
+                              const center = geometryCenter(f.geometry?.coordinates);
+                              if (center) navigate(geoportalAlertHref(center[0], center[1], "inondations", undefined, { product: "google_flash_floods" }));
+                            }}>
                               <div className="cap-flash-left">
                                 <span className="cap-flash-dot" />
                                 <span>{p.likelihood} · {p.forecast_period_hours}h</span>
@@ -790,7 +975,6 @@ export default function AlertsPage() {
               icon="☀️"
               title="Sécheresse"
               countLabel="SAP sécheresse · SPI + VHI + GDO"
-              defaultOpen
             >
               <DroughtSection />
             </AlertAccordion>
@@ -800,7 +984,6 @@ export default function AlertsPage() {
               icon="🔥"
               title="Feux de végétation"
               countLabel="SAP feux · GWIS FWI + FIRMS"
-              defaultOpen
             >
               <FireSection />
             </AlertAccordion>
