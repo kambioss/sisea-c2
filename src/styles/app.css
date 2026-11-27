@@ -3794,7 +3794,7 @@ p { margin: 0; }
   .c2-geoai-toggle span { font-size: 22px; }
 }
 .c2-geoai.is-open .c2-geoai-toggle { display: none; }
-.c2-geoai-panel { position: absolute; right: 0; bottom: 0; width: min(340px, calc(100vw - 28px)); height: min(520px, calc(100vh - 180px)); border-radius: 8px; background: #fff; border: 1px solid #d9e2eb; box-shadow: 0 22px 60px rgba(10,31,54,.25); display: flex; flex-direction: column; overflow: hidden; }
+.c2-geoai-panel { position: absolute; right: 0; bottom: 0; width: min(410px, calc(100vw - 28px)); height: min(600px, calc(100vh - 120px)); border-radius: 8px; background: #fff; border: 1px solid #d9e2eb; box-shadow: 0 22px 60px rgba(10,31,54,.25); display: flex; flex-direction: column; overflow: hidden; }
 .c2-geoai-panel header { padding: 17px 18px; background: #183f68; color: #fff; display: flex; align-items: center; justify-content: space-between; }
 .c2-geoai-panel header > div { display: grid; grid-template-columns: 12px 1fr; column-gap: 8px; align-items: center; }
 .c2-geoai-panel header strong { font-size: 17px; }
@@ -3807,7 +3807,7 @@ p { margin: 0; }
 .c2-geoai-welcome button { width: 100%; padding: 10px 12px; margin-top: 8px; text-align: left; color: #244b75; background: #fff; border: 1px solid #d7e1eb; cursor: pointer; }
 .c2-geoai-message { width: fit-content; max-width: 92%; margin-bottom: 12px; padding: 11px 13px; border-radius: 3px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .c2-geoai-message.user { margin-left: auto; color: #fff; background: #2867a8; }
-.c2-geoai-message.assistant { width: 100%; max-width: 100%; box-sizing: border-box; color: #203750; background: #fff; border: 1px solid #dce4ec; white-space: normal; overflow-x: auto; }
+.c2-geoai-message.assistant { width: 100%; max-width: 100%; box-sizing: border-box; color: #203750; background: #fff; border: 1px solid #dce4ec; white-space: normal; overflow-x: hidden; }
 .c2-geoai-message.error { color: #9d302d; border-color: #ecc7c4; }
 .c2-geoai-message.assistant > :first-child { margin-top: 0; }
 .c2-geoai-message.assistant > :last-child { margin-bottom: 0; }
@@ -3815,9 +3815,9 @@ p { margin: 0; }
 .c2-geoai-message.assistant h1,
 .c2-geoai-message.assistant h2,
 .c2-geoai-message.assistant h3 { margin: 4px 0 9px; color: #173451; font-size: 14px; }
-.c2-geoai-message.assistant table { width: 100%; min-width: 330px; margin: 8px 0; border-spacing: 0; border-collapse: collapse; font-size: 12px; }
+.c2-geoai-message.assistant table { width: 100%; min-width: 0; table-layout: fixed; margin: 8px 0; border-spacing: 0; border-collapse: collapse; font-size: 10.5px; }
 .c2-geoai-message.assistant th,
-.c2-geoai-message.assistant td { padding: 7px 8px; text-align: left; vertical-align: top; border: 1px solid #d7e0e8; }
+.c2-geoai-message.assistant td { padding: 6px 5px; text-align: left; vertical-align: top; border: 1px solid #d7e0e8; overflow-wrap: anywhere; }
 .c2-geoai-message.assistant th { color: #173451; background: #edf3f8; font-weight: 700; }
 .c2-geoai-message.assistant tbody tr:nth-child(even) { background: #f8fafc; }
 .c2-geoai-charts { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }

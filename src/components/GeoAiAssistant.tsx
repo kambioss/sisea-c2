@@ -23,6 +23,23 @@ function inlineChartHeight(chart: InlineChart): number {
 
 function DownloadableChart({ chart }: { chart: InlineChart }) {
   const chartRef = useRef<ReactECharts | null>(null);
+  const xAxis = chart.option.xAxis as Record<string, unknown> | undefined;
+  const compactOption = xAxis?.type === "value" ? {
+    ...chart.option,
+    xAxis: {
+      ...xAxis,
+      splitNumber: 4,
+      axisLabel: {
+        ...(xAxis.axisLabel as Record<string, unknown> | undefined),
+        fontSize: 9,
+        hideOverlap: true,
+        formatter: (value: number) => new Intl.NumberFormat("fr-FR", {
+          notation: Math.abs(value) >= 1000 ? "compact" : "standard",
+          maximumFractionDigits: 1,
+        }).format(value),
+      },
+    },
+  } : chart.option;
 
   function downloadChart() {
     const instance = chartRef.current?.getEchartsInstance();
@@ -45,7 +62,7 @@ function DownloadableChart({ chart }: { chart: InlineChart }) {
       </div>
       <ReactECharts
         ref={chartRef}
-        option={chart.option}
+        option={compactOption}
         style={{ height: inlineChartHeight(chart), width: "100%" }}
         opts={{ renderer: "canvas" }}
       />
