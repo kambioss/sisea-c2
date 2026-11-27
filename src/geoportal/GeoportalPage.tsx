@@ -1177,6 +1177,41 @@ export default function GeoportalPage() {
       ? `${COUNTRIES.filter((c) => c.region === region).length} pays · sous-région ONU M49`
       : "55 pays · 5 sous-régions ONU M49";
 
+  // GeoAI lives outside the geoportal component tree. Keep a compact,
+  // explicit spatial context for it so "ici", "cette région" and follow-up
+  // questions use the fast server-side zonal clip instead of Africa-wide
+  // calculations or a client-side visual mask.
+  useEffect(() => {
+    const selectedUnit = selected ? unitById.get(selected) : undefined;
+    const spatial = selected?.includes(".") ? {
+      scope: "admin1",
+      territory_id: selected,
+      country_iso3: selectedUnit?.iso3 ?? selected.split(".")[0],
+      region_name: zoneName(selected),
+      label: territoryLabel,
+    } : selected ? {
+      scope: "country",
+      territory_id: selected,
+      country_iso3: selected,
+      label: territoryLabel,
+    } : region !== "all" ? {
+      scope: "un_subregion",
+      territory_id: region,
+      label: territoryLabel,
+      country_iso3s: units.filter((unit) => unit.subregion === region).map((unit) => unit.iso3),
+    } : {
+      scope: "continent",
+      territory_id: "AFR",
+      label: "Afrique",
+    };
+    sessionStorage.setItem("c2-geoai-spatial-context", JSON.stringify({
+      ...spatial,
+      indicator_id: activeProductIndicator?.id ?? rasterIndicator?.id ?? (indicatorVisible ? indicator.id : null),
+      indicator_label: activeProductIndicator?.label_fr ?? rasterIndicator?.name ?? (indicatorVisible ? indicator.name : null),
+      period: activeProductDate?.period_label ?? rasterPeriod?.label ?? period,
+    }));
+  }, [selected, region, units, unitById, territoryLabel, activeProductIndicator, rasterIndicator, indicatorVisible, indicator, activeProductDate, rasterPeriod, period]);
+
   const openTab = (id: PanelTab) => {
     if (panelOpen && panelTab === id) setPanelOpen(false);
     else {

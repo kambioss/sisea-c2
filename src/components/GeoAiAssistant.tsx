@@ -137,10 +137,19 @@ export default function GeoAiAssistant() {
       const enrichedQuestion = value.length < 60 && lastUserMsg
         ? `(suite de : « ${lastUserMsg.text.slice(0, 200)} ») ${value}`
         : value;
+      let spatialContext: Record<string, unknown> = {};
+      try {
+        spatialContext = JSON.parse(sessionStorage.getItem("c2-geoai-spatial-context") ?? "{}") as Record<string, unknown>;
+      } catch { /* ignore an obsolete/corrupt session value */ }
       const requestBody = JSON.stringify({
         question: enrichedQuestion,
         history,
-        active_context: { application: "frontend-c2", path: window.location.pathname, language: "fr" },
+        active_context: {
+          application: "frontend-c2",
+          path: window.location.pathname,
+          language: "fr",
+          spatial: spatialContext,
+        },
       });
 
       let payload: Record<string, unknown> | null = null;
