@@ -326,7 +326,7 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
         if ((feature as Feature<Geometry>).get("id") !== "__SELECTED__") return undefined as unknown as Style;
         return new Style({
           stroke: new Stroke({ color: "#7ee0a8", width: 2.2 }),
-          fill: new Fill({ color: "rgba(95,163,113,0.3)" }),
+          fill: new Fill({ color: "rgba(95,163,113,0)" }),
         });
       },
       zIndex: 50,
@@ -439,7 +439,7 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
         if ((feature as Feature<Geometry>).get("id") !== selected) return undefined as unknown as Style;
         return new Style({
           stroke: new Stroke({ color: "#7ee0a8", width: 2.2 }),
-          fill: new Fill({ color: "rgba(95,163,113,0.3)" }),
+          fill: new Fill({ color: "rgba(95,163,113,0)" }),
         });
       });
       selectionRef.current.changed();
