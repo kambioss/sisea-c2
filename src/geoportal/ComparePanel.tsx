@@ -64,6 +64,14 @@ function legendUrl(date: ProductDate): string {
 }
 
 function dateLabel(indicator: ProductIndicator, date: ProductDate): string {
+  if (date.period_start && date.period_end && date.forecast_horizon_days) {
+    const issued = new Date(date.period_start);
+    const valid = new Date(date.period_end);
+    if (Number.isFinite(issued.getTime()) && Number.isFinite(valid.getTime())) {
+      const fmt = (value: Date) => new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" }).format(value);
+      return `Du ${fmt(issued)} au ${fmt(valid)} · J+${date.forecast_horizon_days}`;
+    }
+  }
   if (indicator.temporal_step === "year") {
     const year = date.reference_time?.slice(0, 4) ?? date.layer_name.match(/(?:19|20)\d{2}/)?.[0];
     if (year) return year;

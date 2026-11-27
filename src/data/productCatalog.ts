@@ -7,6 +7,9 @@ export interface ProductDate {
   title: string;
   reference_time: string | null;
   period_label: string;
+  period_start?: string | null;
+  period_end?: string | null;
+  forecast_horizon_days?: number | null;
 }
 
 export interface ProductLatest {
@@ -15,6 +18,9 @@ export interface ProductLatest {
   style: string | null;
   reference_time: string | null;
   period_label: string;
+  period_start?: string | null;
+  period_end?: string | null;
+  forecast_horizon_days?: number | null;
 }
 
 export interface ProductIndicator {
@@ -23,6 +29,7 @@ export interface ProductIndicator {
   label_en: string;
   unit: string;
   temporal_step: string;
+  forecast_horizon_days?: number | null;
   dates_count: number;
   latest: ProductLatest | null;
 }

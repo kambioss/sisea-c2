@@ -33,6 +33,18 @@ interface LayerEntry {
 }
 
 const entries = new Map<string, LayerEntry>();
+const jsonRequests = new Map<string, Promise<unknown>>();
+
+export function fetchAlertJson<T>(url: string): Promise<T> {
+  const cached = jsonRequests.get(url);
+  if (cached) return cached as Promise<T>;
+  const request = fetch(url).then((response) => {
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json() as Promise<T>;
+  }).catch((error) => { jsonRequests.delete(url); throw error; });
+  jsonRequests.set(url, request);
+  return request;
+}
 
 /* Prochain midi suivant l'instant donné — borne de validité du cache. */
 function nextRefreshPoint(from: Date): number {
@@ -109,4 +121,22 @@ export function subscribeSapLayer<P>(
 
   notifyListener();
   return () => { entry.listeners.delete(notifyListener); };
+}
+
+function wfs(typeNames: string, propertyName?: string): string {
+  return `/geoserver/geossia/ows?${new URLSearchParams({ service: "WFS", version: "2.0.0", request: "GetFeature", typeNames, outputFormat: "application/json", ...(propertyName ? { propertyName } : {}) })}`;
+}
+
+export function preloadAlertLayers(): void {
+  const sapLayers = [
+    ["geossia:drought_alert_region_current", "zone_key,iso3,zone_name,issue_date,alert_level_now,level_j5,level_j10,level_j15,level_m1,level_m3,level_m6,level_court,level_moyen,level_long,peak_alert_level,peak_horizon,trend,alert_type,spi_now,vhi_now,spi_source_date,gdo_source_date"],
+    ["geossia:drought_alert_country_current", "zone_key,iso3,zone_name,issue_date,alert_level_now,level_j5,level_j10,level_j15,level_m1,level_m3,level_m6,level_court,level_moyen,level_long,peak_alert_level,peak_horizon,trend,alert_type,spi_now,vhi_now,spi_source_date,gdo_source_date"],
+    ["geossia:fire_alert_region_current", "zone_key,iso3,zone_name,issue_date,alert_level_now,peak_alert_level,peak_lead_days,alert_type,trend,danger_level_now,detections_24h,detections_7d,frp_24h_mw,fire_activity_level,share_p90,share_p95"],
+  ] as const;
+  for (const [layer, properties] of sapLayers) {
+    const unsubscribe = subscribeSapLayer(layer, wfs(layer, properties), () => undefined);
+    unsubscribe();
+  }
+  void fetchAlertJson(wfs("geossia:flood_gauge_status")).catch(() => undefined);
+  void fetchAlertJson(wfs("geossia:flash_flood_event")).catch(() => undefined);
 }

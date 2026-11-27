@@ -16,6 +16,7 @@ import { get as getProjection, transformExtent, transform } from "ol/proj";
 import { register } from "ol/proj/proj4";
 import { createXYZ } from "ol/tilegrid";
 import { defaults as defaultControls } from "ol/control";
+import { getRenderPixel } from "ol/render";
 import { DragBox } from "ol/interaction";
 import { always } from "ol/events/condition";
 import proj4 from "proj4";
@@ -105,18 +106,6 @@ export const OVERLAYS: Overlay[] = [
 const WMS_URL = ((import.meta.env.VITE_GEOSERVER_WMS_URL as string | undefined) ?? "/geoserver/geossia/wms").replace(/\/$/, "");
 const RASTER_CACHE_VERSION = "20261112-spi-africa-gaul2024-v1";
 
-function ringSignedArea(ring: number[][]): number {
-  let area = 0;
-  for (let i = 0; i < ring.length - 1; i++) {
-    area += ring[i][0] * ring[i + 1][1] - ring[i + 1][0] * ring[i][1];
-  }
-  return area / 2;
-}
-
-function asMaskHole(ring: number[][]): number[][] {
-  return ringSignedArea(ring) > 0 ? [...ring].reverse() : ring;
-}
-
 function hexToRgba(color: string, alpha: number): string {
   if (color.startsWith("rgb(")) {
     return color.replace("rgb(", "rgba(").replace(")", `,${alpha})`);
@@ -176,6 +165,7 @@ interface Props {
 }
 
 const AFRICA_BOUNDS: [number, number, number, number] = [-20, -36, 54, 38];
+const AFRICA_FIT_PADDING: [number, number, number, number] = [68, 40, 28, 40];
 
 export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({ level, styles, choroplethVisible, selected, basemap, overlays, rasterLayer, analysisLayer, rasterClipIds, geeTileLayers, drawBbox, alertContext = false, showLocalities = true, onDrawBbox, onSelect, onHover }, ref) {
   const container = useRef<HTMLDivElement>(null);
@@ -213,7 +203,7 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
       const extent = feature?.getGeometry()?.getExtent();
       return extent ? transformExtent(extent, "EPSG:8857", "EPSG:4326") as [number, number, number, number] : null;
     },
-    reset: () => mapRef.current?.getView().fit(transformExtent(AFRICA_BOUNDS, "EPSG:4326", "EPSG:8857"), { padding: [40, 40, 40, 40], duration: 900 }),
+    reset: () => mapRef.current?.getView().fit(transformExtent(AFRICA_BOUNDS, "EPSG:4326", "EPSG:8857"), { padding: AFRICA_FIT_PADDING, duration: 900 }),
     clearDrawnBbox: () => bboxSourceRef.current.clear(),
     showGeoJsonGeometry: (geometry) => {
       const map = mapRef.current;
@@ -343,9 +333,18 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
     });
     selectionRef.current = selection;
 
+    // Keep administrative units clickable even when the thematic
+    // choropleth is hidden behind a raster. This layer is visually neutral:
+    // it only provides polygon hit areas for hover/click selection.
+    const interaction = new VectorLayer({
+      source: vectorSource.current,
+      style: new Style({ fill: new Fill({ color: "rgba(0,0,0,0.001)" }) }),
+      zIndex: 49,
+    });
+
     const map = new OlMap({
       target: container.current,
-      layers: [basemapLayer, choropleth, selection, labelLayer],
+      layers: [basemapLayer, choropleth, interaction, selection, labelLayer],
       view: new View({
         projection: "EPSG:8857",
         center: transform([17, 2], "EPSG:4326", "EPSG:8857"),
@@ -355,14 +354,14 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
     });
 
     const africaView = map.getView();
-    africaView.fit(transformExtent(AFRICA_BOUNDS, "EPSG:4326", "EPSG:8857"), { padding: [40, 40, 40, 40] });
+    africaView.fit(transformExtent(AFRICA_BOUNDS, "EPSG:4326", "EPSG:8857"), { padding: AFRICA_FIT_PADDING });
     // The continent-wide framing is the outer navigation limit: users may
     // zoom into countries, but cannot zoom out beyond Africa.
     africaView.setMinZoom(africaView.getZoom() ?? 3);
 
     const pickFeature = (pixel: number[]): Feature<Geometry> | null => {
       let hit: Feature<Geometry> | null = null;
-      map.forEachFeatureAtPixel(pixel, (f) => { if (!hit) hit = f as Feature<Geometry>; }, { layerFilter: (l) => l === choropleth });
+      map.forEachFeatureAtPixel(pixel, (f) => { if (!hit) hit = f as Feature<Geometry>; }, { layerFilter: (l) => l === interaction });
       return hit;
     };
 
@@ -463,6 +462,10 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
     const lastNL = namedLayers[namedLayers.length - 1];
     const sldSuffix = rasterLayer.sldBody && lastNL ? rasterLayer.sldBody.slice(rasterLayer.sldBody.lastIndexOf(lastNL) + lastNL.length) : "";
 
+    const clipFeatures = rasterClipIds?.length
+      ? vectorSource.current.getFeatures().filter((feature) => rasterClipIds.includes(String(feature.get("id"))))
+      : [];
+
     layerNames.forEach((name, index) => {
       const qualified = name.includes(":") ? name : `geossia:${name}`;
       const params: Record<string, string> = {
@@ -488,35 +491,37 @@ export const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas({
         opacity: 1,
         zIndex: 3 + index,
       });
+      if (clipFeatures.length) {
+        imgLayer.on("prerender", (event) => {
+          const context = event.context as CanvasRenderingContext2D;
+          context.save();
+          context.beginPath();
+          const drawRing = (ring: number[][]) => {
+            ring.forEach((coordinate, pointIndex) => {
+              const pixel = getRenderPixel(event, map.getPixelFromCoordinate(coordinate));
+              if (pointIndex === 0) context.moveTo(pixel[0], pixel[1]);
+              else context.lineTo(pixel[0], pixel[1]);
+            });
+            context.closePath();
+          };
+          for (const feature of clipFeatures) {
+            const geometry = feature.getGeometry();
+            if (!geometry) continue;
+            const coordinates = (geometry as Geometry & { getCoordinates(): unknown }).getCoordinates();
+            if (geometry.getType() === "Polygon") {
+              for (const ring of coordinates as number[][][]) drawRing(ring);
+            } else if (geometry.getType() === "MultiPolygon") {
+              for (const polygon of coordinates as number[][][][]) for (const ring of polygon) drawRing(ring);
+            }
+          }
+          context.clip("evenodd");
+        });
+        imgLayer.on("postrender", (event) => (event.context as CanvasRenderingContext2D).restore());
+      }
       map.addLayer(imgLayer);
       rasterLayersRef.current.push(imgLayer);
     });
 
-    // Clip mask
-    if (rasterClipIds?.length && geojsonData.current) {
-      const wanted = new Set(rasterClipIds);
-      const holes: number[][][] = [];
-      for (const f of geojsonData.current.features) {
-        if (!wanted.has(String(f.properties?.id))) continue;
-        const geom = f.geometry;
-        if (geom?.type === "Polygon") holes.push(asMaskHole(geom.coordinates[0] as number[][]));
-        if (geom?.type === "MultiPolygon") for (const p of geom.coordinates) holes.push(asMaskHole(p[0] as number[][]));
-      }
-      const maskGeoJson: GeoJSON.FeatureCollection = {
-        type: "FeatureCollection",
-        features: [{ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [[[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]], ...holes] } }],
-      };
-      const maskSource = new VectorSource({
-        features: new OlGeoJSON({ dataProjection: "EPSG:4326", featureProjection: "EPSG:8857" }).readFeatures(maskGeoJson),
-      });
-      const mask = new VectorLayer({
-        source: maskSource,
-        style: new Style({ fill: new Fill({ color: "rgba(238,243,240,0.97)" }) }),
-        zIndex: 10 + layerNames.length,
-      });
-      map.addLayer(mask);
-      maskRef.current = mask;
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rasterLayer?.layerName, rasterLayer?.style, rasterLayer?.sldBody, rasterClipIds?.join(","), loadedLevel, ready]);
 

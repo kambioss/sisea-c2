@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import capLogo from "../cap-logo.png";
-import { subscribeSapLayer } from "../services/alertsCache";
+import { fetchAlertJson, subscribeSapLayer } from "../services/alertsCache";
 import type { SapLayerSnapshot, SapLayerState } from "../services/alertsCache";
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -757,13 +757,11 @@ export default function AlertsPage() {
   useEffect(() => {
     const ctrl = new AbortController();
 
-    fetch(WFS("geossia:flood_gauge_status"), { signal: ctrl.signal })
-      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+    fetchAlertJson<{ features?: GaugeFeature[] }>(WFS("geossia:flood_gauge_status"))
       .then((json) => { setGauges(json.features ?? []); setGaugeState("ready"); })
       .catch((e: Error) => { if (e.name !== "AbortError") setGaugeState("error"); });
 
-    fetch(WFS("geossia:flash_flood_event"), { signal: ctrl.signal })
-      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+    fetchAlertJson<{ features?: FlashFeature[] }>(WFS("geossia:flash_flood_event"))
       .then((json) => { setFlashes(json.features ?? []); setFlashState("ready"); })
       .catch((e: Error) => { if (e.name !== "AbortError") setFlashState("error"); });
 

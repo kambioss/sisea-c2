@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { BirdLogo } from "../components/BirdLogo";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
+  const { ready, authenticated, name, login, logout } = useAuth();
   return (
     <>
       <section className="page-hero" style={{ minHeight: "50vh" }}>
@@ -29,54 +31,22 @@ export default function LoginPage() {
               Connectez-vous pour accéder à votre tableau de bord.
             </p>
 
-            <form onSubmit={(e) => e.preventDefault()} style={{ display: "grid", gap: 16 }}>
-              <div className="field" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <label style={{ fontWeight: 600, fontSize: 13.5 }}>Email professionnel</label>
-                <input
-                  type="email"
-                  placeholder="vous@organisation.gouv"
-                  style={{
-                    height: 44,
-                    padding: "0 14px",
-                    border: "1px solid var(--line-2)",
-                    borderRadius: "var(--r)",
-                    fontSize: 14,
-                    background: "var(--surface)",
-                  }}
-                />
+            {authenticated ? (
+              <div style={{ display: "grid", gap: 14, textAlign: "center" }}>
+                <p>Connecté{ name ? ` en tant que ${name}` : ""}.</p>
+                <Link to="/geoportail" className="btn btn-green lg block">Ouvrir le géoportail climat</Link>
+                <button type="button" className="btn block" onClick={logout}>Se déconnecter</button>
               </div>
-              <div className="field" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <label style={{ fontWeight: 600, fontSize: 13.5 }}>Mot de passe</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  style={{
-                    height: 44,
-                    padding: "0 14px",
-                    border: "1px solid var(--line-2)",
-                    borderRadius: "var(--r)",
-                    fontSize: 14,
-                    background: "var(--surface)",
-                  }}
-                />
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
-                <label style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--ink-2)", cursor: "pointer" }}>
-                  <input type="checkbox" style={{ accentColor: "var(--forest-2)" }} /> Rester connecté
-                </label>
-                <a href="#" style={{ color: "var(--forest-2)", fontWeight: 600 }}>Mot de passe oublié ?</a>
-              </div>
-              <button type="submit" className="btn btn-green lg block" style={{ marginTop: 8 }}>
-                Se connecter
+            ) : (
+              <button type="button" className="btn btn-green lg block" disabled={!ready} onClick={() => login("/geoportail")}>
+                {ready ? "Se connecter avec GEOSSIA" : "Préparation de la connexion…"}
               </button>
-            </form>
+            )}
 
             <div style={{ marginTop: 28, paddingTop: 24, borderTop: "var(--hairline)", textAlign: "center" }}>
               <p style={{ fontSize: 13.5, color: "var(--ink-2)" }}>
                 Pas encore de compte ?{" "}
-                <Link to="/login" style={{ color: "var(--forest-2)", fontWeight: 600 }}>
-                  Demander un accès
-                </Link>
+                <button type="button" onClick={() => login("/geoportail")} style={{ border: 0, background: "none", color: "var(--forest-2)", fontWeight: 600, cursor: "pointer" }}>Demander un accès</button>
               </p>
               <p className="footnote" style={{ marginTop: 16 }}>
                 Accès réservé aux agences nationales, partenaires institutionnels

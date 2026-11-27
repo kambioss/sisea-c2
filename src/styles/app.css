@@ -236,16 +236,22 @@ p { margin: 0; }
   to { opacity: 1; transform: translate(0, -50%); }
 }
 .fa-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  width: 205px;
-  min-height: 46px;
-  padding: 10px 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  width: 48px;
+  padding: 16px 5px 14px;
   border-radius: 0;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
+  line-height: 1.2;
   box-shadow: none;
   transition: all 0.18s ease;
   white-space: nowrap;
+}
+/* Texte vertical (lecture de bas en haut) pour le rail latéral. */
+.fa-btn .fa-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  letter-spacing: 0.05em;
 }
 .fa-btn.customize {
   background: #fff;
@@ -263,7 +269,7 @@ p { margin: 0; }
   border-radius: 0 0 0 10px;
 }
 .fa-btn.try-now:hover { background: var(--orange-2); transform: translateY(-1px); }
-.fa-btn .ico { width: 14px; height: 14px; }
+.fa-btn .ico { width: 20px; height: 20px; }
 
 @media (max-width: 900px) {
   .floating-actions { display: none; }
@@ -314,6 +320,32 @@ p { margin: 0; }
 .oss-logo-blue { opacity: 0; }
 .site-header.on-light .oss-logo-white { opacity: 0; }
 .site-header.on-light .oss-logo-blue { opacity: 1; filter: drop-shadow(0 0 1px rgba(21,61,88,.4)); }
+.component-identity {
+  min-width: 132px;
+  padding-left: 14px;
+  border-left: 1px solid rgba(255,255,255,.34);
+  line-height: 1.12;
+}
+.component-identity strong {
+  display: block;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .09em;
+}
+.component-identity small {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255,255,255,.76);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.site-header.on-light .component-identity { border-left-color: var(--line-2); }
+.site-header.on-light .component-identity strong { color: var(--forest-2); }
+.site-header.on-light .component-identity small { color: var(--muted); }
 .oss-brand-logo-footer { width: 195px; height: 82px; }
 .oss-brand-logo-footer .oss-logo { width: 185px; }
 .site-header.on-light .brand-mark { color: var(--forest); }
@@ -356,6 +388,22 @@ p { margin: 0; }
 .site-header.on-light .main-nav a.active::after { background: var(--forest-2); }
 
 .header-actions { display: flex; align-items: center; gap: 12px; margin-left: 12px; }
+.platform-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: var(--r-pill);
+  color: rgba(255,255,255,.88);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .035em;
+  white-space: nowrap;
+  transition: background .18s ease, color .18s ease;
+}
+.platform-return:hover { color: #fff; background: rgba(255,255,255,.09); }
+.site-header.on-light .platform-return { color: var(--ink-2); }
+.site-header.on-light .platform-return:hover { color: var(--forest-2); background: rgba(24,128,78,.08); }
 .header-phone {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 8px 16px;
@@ -389,16 +437,16 @@ p { margin: 0; }
 .flood-state.ready i { background: #4caf50; animation: cap-pulse 2s infinite; }
 .flood-state.error i { background: #d32f2f; }
 .flood-state span { display: grid; }
-.flood-state small { margin-top: 2px; color: #6b7788; font-size: 13px; }
+.flood-state small { margin-top: 2px; color: #6b7788; font-size: 14px; }
 @keyframes cap-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 
 /* Stats cards */
 .cap-stats { display: flex; gap: 16px; margin-top: 24px; flex-wrap: wrap; }
 .cap-stat { flex: 1 1 160px; padding: 20px; border: 1px solid #dce3ee; border-radius: 10px; background: #fff; text-align: center; }
 .cap-stat--alert { border-color: #f57c00; background: #fff8f0; }
-.cap-stat-num { display: block; font-family: var(--serif); font-size: 36px; font-weight: 600; line-height: 1; }
+.cap-stat-num { display: block; font-family: var(--serif); font-size: 40px; font-weight: 600; line-height: 1; }
 .cap-stat--alert .cap-stat-num { color: #e65100; }
-.cap-stat-label { display: block; margin-top: 6px; font-size: 13px; color: var(--muted); }
+.cap-stat-label { display: block; margin-top: 6px; font-size: 15px; font-weight: 700; color: #4a5468; }
 
 /* Severity legend (Google-style) */
 .cap-legend { margin-top: 28px; padding: 20px 24px; border: 1px solid #dce3ee; border-radius: 10px; background: #fff; }
@@ -412,22 +460,22 @@ p { margin: 0; }
 .cap-countries { margin-top: 28px; }
 .cap-countries h3 { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
 .cap-countries ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.cap-countries li { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #fff; border: 1px solid #dce3ee; border-radius: 10px; font-size: 14px; }
+.cap-countries li { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #fff; border: 1px solid #dce3ee; border-radius: 10px; font-size: 15px; cursor: pointer; transition: background .15s, border-color .15s, box-shadow .15s; }
 .cap-country-left { display: flex; align-items: center; gap: 12px; }
 .cap-country-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-.cap-country-sev { display: block; font-weight: 600; font-size: 15px; }
-.cap-country-detail { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.cap-country-sev { display: block; font-weight: 800; font-size: 17px; }
+.cap-country-detail { display: block; font-size: 14.5px; font-weight: 600; color: #566070; margin-top: 3px; }
 .cap-country-right { text-align: right; }
-.cap-country-name { display: block; font-size: 16px; font-weight: 600; color: var(--ink); }
-.cap-country-date { display: block; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 2px; }
+.cap-country-name { display: block; font-size: 17.5px; font-weight: 700; color: var(--ink); }
+.cap-country-date { display: block; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 2px; }
 
 /* Flash floods — info left, location right */
 .cap-flash { margin-top: 28px; }
 .cap-flash h3 { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
 .cap-flash ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.cap-flash li { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #fff; border: 1px solid #dce3ee; border-radius: 8px; font-size: 14px; }
-.cap-flash-left { display: flex; align-items: center; gap: 10px; }
-.cap-flash-right { text-align: right; font-weight: 500; color: var(--ink-2); }
+.cap-flash li { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fff; border: 1px solid #dce3ee; border-radius: 8px; font-size: 15.5px; cursor: pointer; transition: background .15s, border-color .15s, box-shadow .15s; }
+.cap-flash-left { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.cap-flash-right { text-align: right; font-weight: 600; color: var(--ink-2); }
 .cap-flash-dot { width: 10px; height: 10px; border-radius: 50%; background: #1565c0; flex-shrink: 0; }
 
 /* Source footer */
@@ -438,24 +486,30 @@ p { margin: 0; }
 
 /* ── Page Alertes : titres élargis ── */
 .alerts-accordion-list .report-accordion-info h4 { font-size: 26px; }
-.alerts-accordion-list .report-accordion-count { color: var(--ink); font-size: 15px; font-weight: 500; line-height: 1.45; }
 .alerts-accordion-list .alert-badge { min-width: 26px; height: 26px; font-size: 13px; }
 .alerts-accordion-list .flood-state strong { font-size: 18px; }
+.alerts-accordion-list .report-accordion-count { font-size: 14px; }
 .alerts-accordion-list .cap-countries h3,
 .alerts-accordion-list .cap-flash h3 { font-size: 15px; }
 
+/* ── Page Alertes : interactions (filtres de niveau, clic → Géoportail) ── */
+.cap-stat--filter { display: block; cursor: pointer; }
+.cap-stat--filter:hover { border-color: #9fb3c8; }
+.cap-stat--filter.active { border-color: #2d5a3d; background: #eef4ec; box-shadow: inset 0 0 0 1px #2d5a3d; }
+.cap-countries li:hover { border-color: #9fb3c8; background: #f6f9fd; }
+.cap-flash li:hover { border-color: #b9c8dd; background: #f0f4fa; }
+
 /* ── SAP sécheresse ── */
 
-/* Horizon tabs (court / moyen / long terme) */
-.horizon-tabs { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 22px; padding: 0; border: 0; background: transparent; }
-.horizon-tabs button { width: 100%; min-width: 0; min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 22px; border: 1px solid #dce3ee; border-radius: 12px; background: #fff; cursor: pointer; text-align: left; transition: background .15s ease, border-color .15s ease; }
-.horizon-tabs button small { white-space: nowrap; }
-.horizon-tabs button strong { display: flex; align-items: center; align-self: stretch; font-size: 15px; line-height: 1.25; color: var(--ink); }
-.horizon-tabs button small { display: flex; align-items: center; align-self: stretch; font-family: var(--mono); font-size: 11px; line-height: 1.25; letter-spacing: 0.04em; color: var(--muted); }
+/* Horizon tabs (court / moyen / long terme) — rangée horizontale, périodes sous les libellés */
+.horizon-tabs { display: flex; gap: 8px; margin-top: 22px; padding: 8px; border: 1px solid #dce3ee; border-radius: 14px; background: #fff; }
+.horizon-tabs button { flex: 1 1 0; display: grid; gap: 4px; padding: 16px 20px; border: 0; border-radius: 9px; background: transparent; cursor: pointer; text-align: left; transition: background .15s ease; }
+.horizon-tabs button strong { font-size: 17.5px; font-weight: 700; color: var(--ink); }
+.horizon-tabs button small { font-family: var(--mono); font-size: 13px; letter-spacing: 0.04em; color: var(--muted); }
 .horizon-tabs button:hover { background: #f0f4fa; }
 .horizon-tabs button.active { background: #102b50; }
 .horizon-tabs button.active strong { color: #fff; }
-.horizon-tabs button.active small { color: rgba(255,255,255,.65); }
+.horizon-tabs button.active small { color: rgba(255,255,255,.72); }
 
 /* Choropleth map card */
 .drought-map { margin: 24px 0 0; border: 1px solid #dce3ee; border-radius: 12px; background: linear-gradient(180deg, #eef3f9, #e4ecf5); overflow: hidden; }
@@ -2613,6 +2667,8 @@ p { margin: 0; }
 
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1024px) {
+  .component-identity { display: none; }
+  .platform-return span { display: none; }
   .theme-grid-3 { grid-template-columns: 1fr; }
   .theme-card-photo { min-height: 380px; }
   .alerts-layout, .trends-layout, .about-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -2625,8 +2681,22 @@ p { margin: 0; }
   .steps { grid-template-columns: repeat(2, 1fr) !important; }
 }
 @media (max-width: 768px) {
-  .main-nav { display: none; }
+  .site-header { padding: 10px 0; }
+  .site-header.scrolled { padding: 8px 0; }
+  .header-inner { gap: 8px; }
+  .oss-brand-logo { width: 116px; height: 48px; }
+  .oss-logo { width: 112px; }
+  .main-nav { display: none; position: absolute; top: 100%; left: 12px; right: 12px; margin: 0; padding: 8px; flex-direction: column; border: 1px solid var(--line-2); border-radius: 12px; background: rgba(255,255,255,.98); box-shadow: 0 18px 45px rgba(18,44,32,.2); backdrop-filter: blur(14px); }
+  .main-nav.open { display: flex; }
+  .main-nav a, .site-header.transparent .main-nav a { width: 100%; padding: 12px 14px; color: var(--ink-2); }
+  .main-nav a.active, .site-header.transparent .main-nav a.active { color: var(--forest-2); background: rgba(24,128,78,.08); }
+  .main-nav a.active::after { display: none; }
+  .menu-toggle { display: inline-grid; place-content: center; gap: 4px; width: 40px; height: 40px; padding: 0; border: 1px solid rgba(255,255,255,.45); border-radius: 9px; background: rgba(255,255,255,.08); color: #fff; }
+  .menu-toggle span { display: block; width: 18px; height: 2px; border-radius: 2px; background: currentColor; }
+  .site-header.on-light .menu-toggle { border-color: var(--line-2); background: #fff; color: var(--ink-2); }
+  .header-actions { margin-left: auto; gap: 4px; }
   .header-phone { display: none; }
+  .platform-return { display: inline-flex; width: 40px; height: 40px; padding: 0; justify-content: center; }
   .indicator-grid, .resources-grid { grid-template-columns: 1fr; }
   .report-accordion-header { padding: 18px 16px; gap: 14px; }
   .report-accordion-body { padding: 0 16px 16px; }

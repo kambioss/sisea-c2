@@ -1222,6 +1222,7 @@ export default function GeoportalPage() {
           ? "choropleth"
           : null;
   const layerManagerItems = [
+    { id: "labels", label: "Noms des localités" },
     ...(primaryLayerId ? [{ id: primaryLayerId, label: geoAiResultLayer?.title ?? activeProductIndicator?.label_fr ?? rasterIndicator?.name ?? indicator.short }] : []),
     ...overlays.map((id) => ({ id: `overlay:${id}`, label: OVERLAYS.find((item) => item.id === id)?.label ?? id })),
     ...geeTileLayers.map((layer) => ({ id: `gee:${layer.id}`, label: layer.label })),
@@ -1243,7 +1244,7 @@ export default function GeoportalPage() {
   const visibleGeeTileLayers = geeTileLayers.filter((layer) => isLayerShown(`gee:${layer.id}`));
   const primaryLayerShown = primaryLayerId ? isLayerShown(primaryLayerId) : true;
   // Stable geographic reference, including when a source raster is shown.
-  const showLocalities = true;
+  const showLocalities = isLayerShown("labels");
 
   return (
     <div className="gp">
@@ -1710,6 +1711,7 @@ export default function GeoportalPage() {
                       {overlayId === "firms" && <><ul className="legend legend--classes"><li><i style={{ background: "#f4511e" }} /><LegendLabel>Détection active VIIRS ou MODIS</LegendLabel></li></ul><div className="legend-footer">Source : NASA FIRMS · 3 derniers jours</div></>}
                       {overlayId && overlayId !== "firms" && <p className="legend-note">{OVERLAYS.find((entry) => entry.id === overlayId)?.description}</p>}
                       {item.id.startsWith("gee:") && <p className="legend-note">Couche de résultat calculée à la demande.</p>}
+                      {item.id === "labels" && <p className="legend-note">Villes et localités de référence du fond cartographique.</p>}
                     </div>
                   )}
                 </section>
@@ -1754,19 +1756,6 @@ export default function GeoportalPage() {
           </div>
         )}
 
-        {!compareMode && tool === "overlays" && (
-          <div className="map-card tool-card">
-            <div className="map-card-head"><strong>Surcouches géographiques</strong></div>
-            {OVERLAYS.map((o) => (
-              <label key={o.id} className="tool-check">
-                <input type="checkbox" checked={overlays.includes(o.id)} onChange={(e) => setOverlays(e.target.checked ? [...overlays, o.id] : overlays.filter((x) => x !== o.id))} />
-                <span><strong>{o.label}</strong><small>{o.description}</small></span>
-              </label>
-            ))}
-            <p className="legend-note">Ces surcouches sont diffusées par le GeoServer GEOSSIA.</p>
-          </div>
-        )}
-
         {compareMode && (
           <ComparePanel basemap={basemap} productFamilies={productCatalog.families} onExit={() => setCompareMode(false)} />
         )}
@@ -1776,7 +1765,6 @@ export default function GeoportalPage() {
             <button className={tool === "legend" ? "on" : ""} onClick={() => setTool(tool === "legend" ? null : "legend")} title="Légende" aria-label="Légende"><Icon name="list" size={16} /></button>
             <button onClick={() => { mapRef.current?.reset(); update({ pays: null }); }} title="Vue d'ensemble" aria-label="Vue d'ensemble"><Icon name="globe" size={16} /></button>
             <button className={tool === "basemap" ? "on" : ""} onClick={() => setTool(tool === "basemap" ? null : "basemap")} title="Fond de carte" aria-label="Fond de carte"><Icon name="palette" size={16} /></button>
-            <button className={tool === "overlays" ? "on" : ""} onClick={() => setTool(tool === "overlays" ? null : "overlays")} title="Surcouches" aria-label="Surcouches"><Icon name="sliders" size={16} /></button>
           </div>
           <div className="toolbar-group">
             <button onClick={() => mapRef.current?.zoomOut()} aria-label="Dézoomer"><Icon name="minus" size={16} /></button>
@@ -1830,6 +1818,16 @@ function productForecastLabel(indicator: ProductIndicator, date: ProductDate): s
     if (horizon) return `${horizon[1]}–${horizon[2]}`;
     const year = date.reference_time?.slice(0, 4);
     if (year) return `${year}–${Number(year) + 19}`;
+  }
+  if (date.period_start && date.period_end && date.forecast_horizon_days) {
+    const issued = new Date(date.period_start);
+    const valid = new Date(date.period_end);
+    if (Number.isFinite(issued.getTime()) && Number.isFinite(valid.getTime())) {
+      const fmt = (value: Date) => new Intl.DateTimeFormat("fr-FR", {
+        day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC",
+      }).format(value);
+      return `Du ${fmt(issued)} au ${fmt(valid)} · échéance J+${date.forecast_horizon_days}`;
+    }
   }
   const spiMatch = /^spi[_-](\d+)$/.exec(indicator.id);
   if (spiMatch && date.reference_time) {
