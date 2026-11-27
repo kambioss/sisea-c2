@@ -61,6 +61,7 @@ export default function DashboardPage() {
   const [territoryFacts, setTerritoryFacts] = useState<TerritoryFacts | null>(null);
   const selectedCountry = AFRICAN_COUNTRIES.find((item) => item.name === country);
   const selectedIso3 = selectedCountry?.iso3 ?? "AFR";
+  const africaSelected = selectedIso3 === "AFR";
 
   const exportFactSheet = () => {
     const previousTitle = document.title;
@@ -100,10 +101,20 @@ export default function DashboardPage() {
       return fetch(`/geoserver/geossia/wms?${params}`, { signal: controller.signal }).then((response) => response.ok ? response.json() : Promise.reject(new Error(String(response.status))));
     };
     const isoCodes = AFRICAN_COUNTRIES.map((item) => item.iso3).join(";");
+    const fetchWorldBankGdp = async () => {
+      const codes = isoCodes.split(";");
+      const chunks = Array.from({ length: Math.ceil(codes.length / 20) }, (_, index) => codes.slice(index * 20, index * 20 + 20));
+      const payloads = await Promise.all(chunks.map(async (chunk) => {
+        const response = await fetch(`https://api.worldbank.org/v2/country/${chunk.join(";")}/indicator/NY.GDP.MKTP.CD?format=json&mrnev=1&per_page=100`, { signal: controller.signal });
+        if (!response.ok) throw new Error(String(response.status));
+        return response.json();
+      }));
+      return [null, payloads.flatMap((payload) => Array.isArray(payload?.[1]) ? payload[1] : [])];
+    };
     Promise.allSettled([
       wfs("indicator='climatetrace_emissions' AND sub_indicator='total' AND year=2025"),
       wfs("indicator='wdi' AND sub_indicator='population_total' AND year=2025"),
-      fetch(`https://api.worldbank.org/v2/country/${isoCodes}/indicator/NY.GDP.MKTP.CD?format=json&mrnev=1&per_page=100`, { signal: controller.signal }).then((response) => response.ok ? response.json() : Promise.reject(new Error(String(response.status)))),
+      fetchWorldBankGdp(),
     ]).then(([emissionsResult, populationResult, gdpResult]) => {
       const toMap = (result: PromiseSettledResult<{ features?: { properties?: { iso3?: string; value?: number } }[] }>) => new Map(result.status === "fulfilled" ? (result.value.features ?? []).flatMap((feature) => {
         const iso3 = feature.properties?.iso3, value = Number(feature.properties?.value);
@@ -148,9 +159,9 @@ export default function DashboardPage() {
       </section>
 
       <section className="fs-fact-strip" aria-label="Profil socio-économique et carbone">
-        <FactCard title="Part des émissions africaines" value={territoryFacts ? `${territoryFacts.emissionShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts ? `${territoryFacts.emissions.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} MtCO₂e · 2025` : "Chargement…"} progress={territoryFacts?.emissionShare ?? 0} />
-        <FactCard title="Part du PIB africain" value={territoryFacts?.gdpShare !== null && territoryFacts?.gdpShare !== undefined ? `${territoryFacts.gdpShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts?.gdp ? `${(territoryFacts.gdp / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md USD · Banque mondiale` : "Donnée indisponible"} progress={territoryFacts?.gdpShare ?? 0} />
-        <FactCard title="Part de la population africaine" value={territoryFacts ? `${territoryFacts.populationShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts ? `${(territoryFacts.population / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} millions d'habitants · 2025` : "Chargement…"} progress={territoryFacts?.populationShare ?? 0} />
+        <FactCard title={africaSelected ? "Émissions totales africaines" : "Part des émissions africaines"} value={territoryFacts ? africaSelected ? `${territoryFacts.emissions.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} MtCO₂e` : `${territoryFacts.emissionShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts ? africaSelected ? "Inventaire continental · Climate TRACE · 2025" : `${territoryFacts.emissions.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} MtCO₂e · 2025` : "Chargement…"} progress={territoryFacts?.emissionShare ?? 0} />
+        <FactCard title={africaSelected ? "PIB total africain" : "Part du PIB africain"} value={territoryFacts?.gdp !== null && territoryFacts?.gdp !== undefined ? africaSelected ? `${(territoryFacts.gdp / 1e12).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Bn USD` : `${territoryFacts.gdpShare?.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts?.gdp ? africaSelected ? "Somme des dernières valeurs nationales · Banque mondiale" : `${(territoryFacts.gdp / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md USD · Banque mondiale` : "Source PIB temporairement indisponible"} progress={territoryFacts?.gdpShare ?? 0} />
+        <FactCard title={africaSelected ? "Population totale africaine" : "Part de la population africaine"} value={territoryFacts ? africaSelected ? `${(territoryFacts.population / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 3 })} Md` : `${territoryFacts.populationShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts ? `${(territoryFacts.population / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} millions d'habitants · 2025` : "Chargement…"} progress={territoryFacts?.populationShare ?? 0} />
       </section>
 
       <section className="fs-map-card">
