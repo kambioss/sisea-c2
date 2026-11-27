@@ -147,6 +147,12 @@ export default function DashboardPage() {
         <button className="fs-export" onClick={exportFactSheet} title="Exporter cette fiche en PDF"><span className="fs-export-icon">⇩</span><span><strong>Exporter la fiche</strong><small>Document PDF</small></span></button>
       </section>
 
+      <section className="fs-fact-strip" aria-label="Profil socio-économique et carbone">
+        <FactCard title="Part des émissions africaines" value={territoryFacts ? `${territoryFacts.emissionShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts ? `${territoryFacts.emissions.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} MtCO₂e · 2025` : "Chargement…"} progress={territoryFacts?.emissionShare ?? 0} />
+        <FactCard title="Part du PIB africain" value={territoryFacts?.gdpShare !== null && territoryFacts?.gdpShare !== undefined ? `${territoryFacts.gdpShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts?.gdp ? `${(territoryFacts.gdp / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md USD · Banque mondiale` : "Donnée indisponible"} progress={territoryFacts?.gdpShare ?? 0} />
+        <FactCard title="Part de la population africaine" value={territoryFacts ? `${territoryFacts.populationShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts ? `${(territoryFacts.population / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} millions d'habitants · 2025` : "Chargement…"} progress={territoryFacts?.populationShare ?? 0} />
+      </section>
+
       <section className="fs-map-card">
         <div className="fs-map-copy">
           <span className="fs-section-no">01 · Vue territoriale</span>
@@ -159,12 +165,6 @@ export default function DashboardPage() {
           <div className="fs-map-label"><strong>{country}</strong><span>{selectedIso3} · GES 2025 · Climate TRACE</span></div>
           <div className="fs-legend"><span>Faibles</span><i /><i /><i /><i /><i /><span>Élevées</span></div>
         </div>
-      </section>
-
-      <section className="fs-fact-strip" aria-label="Profil socio-économique et carbone">
-        <FactCard title="Part des émissions africaines" value={territoryFacts ? `${territoryFacts.emissionShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts ? `${territoryFacts.emissions.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} MtCO₂e · 2025` : "Chargement…"} progress={territoryFacts?.emissionShare ?? 0} />
-        <FactCard title="Part du PIB africain" value={territoryFacts?.gdpShare !== null && territoryFacts?.gdpShare !== undefined ? `${territoryFacts.gdpShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts?.gdp ? `${(territoryFacts.gdp / 1e9).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Md USD · Banque mondiale` : "Donnée indisponible"} progress={territoryFacts?.gdpShare ?? 0} />
-        <FactCard title="Part de la population africaine" value={territoryFacts ? `${territoryFacts.populationShare.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %` : "—"} detail={territoryFacts ? `${(territoryFacts.population / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} millions d'habitants · 2025` : "Chargement…"} progress={territoryFacts?.populationShare ?? 0} />
       </section>
 
       <nav className="fs-section-nav" aria-label="Sections du tableau de bord">
